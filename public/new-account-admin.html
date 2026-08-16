@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Admin Account - OptiLink</title>
+    <style>
+        :root {
+            --blue: #3E7BFA;
+            --violet: #8B3FF0;
+            --ink: #1B1730;
+            --ink-soft: #4B4768;
+            --muted: #8985A3;
+            --bg: #FAFAFD;
+            --surface: #FFFFFF;
+            --surface-alt: #F2F0FB;
+            --border: #E7E4F5;
+            --danger: #E5484D;
+            --danger-bg: #FDEBEC;
+            --success: #30A46C;
+            --success-bg: #E6F4EA;
+            --gradient: linear-gradient(120deg, var(--blue), var(--violet));
+            --shadow-sm: 0 1px 2px rgba(27, 23, 48, 0.06);
+            --shadow-md: 0 8px 24px rgba(60, 40, 130, 0.10);
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.45;
+            color: var(--ink);
+            background-color: var(--bg);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        button, input, select { font-family: inherit; }
+        a { color: inherit; text-decoration: none; }
+
+        #app {
+            min-height: 100vh;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+        }
+
+        /* Left showcase panel */
+        .showcase {
+            position: relative;
+            background: var(--gradient);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 56px 64px;
+            color: #fff;
+            overflow: hidden;
+        }
+        .showcase::before {
+            content: '';
+            position: absolute;
+            width: 520px;
+            height: 520px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+            top: -180px;
+            right: -160px;
+        }
+        .showcase::after {
+            content: '';
+            position: absolute;
+            width: 360px;
+            height: 360px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+            bottom: -140px;
+            left: -100px;
+        }
+        .showcase-top {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .showcase-top img {
+            width: 42px;
+            height: auto;
+            filter: brightness(0) invert(1);
+        }
+        .showcase-top span {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .showcase-mid {
+            position: relative;
+            z-index: 1;
+            max-width: 460px;
+        }
+        .showcase-tag {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            background: rgba(255,255,255,0.16);
+            padding: 6px 12px;
+            border-radius: 999px;
+            margin-bottom: 18px;
+        }
+        .showcase-mid h1 {
+            font-size: 34px;
+            font-weight: 700;
+            line-height: 1.25;
+            margin: 0 0 14px;
+            letter-spacing: -0.01em;
+        }
+        .showcase-mid p {
+            font-size: 15.5px;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.86);
+            margin: 0 0 24px;
+        }
+        .showcase-features {
+            position: relative;
+            z-index: 1;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .showcase-features li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: rgba(255,255,255,0.9);
+        }
+        .showcase-features li::before {
+            content: '✓';
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .showcase-stats {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            gap: 36px;
+        }
+        .showcase-stats div strong {
+            display: block;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .showcase-stats div span {
+            font-size: 12.5px;
+            color: rgba(255,255,255,0.78);
+        }
+        .showcase-foot {
+            position: relative;
+            z-index: 1;
+            font-size: 12.5px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        /* Right form panel */
+        .form-panel {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            background-color: var(--bg);
+        }
+
+        .register-wrap {
+            width: 100%;
+            max-width: 440px;
+        }
+
+        .brand {
+            text-align: left;
+            margin-bottom: 28px;
+        }
+
+        .brand-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--violet);
+            background: var(--surface-alt);
+            padding: 5px 10px;
+            border-radius: 999px;
+            margin-bottom: 14px;
+        }
+        .brand-kicker svg { width: 13px; height: 13px; }
+
+        .brand-title {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+        .brand-title .accent {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .brand-sub {
+            color: var(--muted);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .card {
+            background-color: var(--surface);
+            border-radius: 16px;
+            padding: 28px 24px 24px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .field-label {
+            font-weight: 600;
+            font-size: 13px;
+            display: block;
+            margin-bottom: 6px;
+            color: var(--ink-soft);
+        }
+
+        .field-group {
+            margin-bottom: 16px;
+        }
+
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 14.5px;
+            box-sizing: border-box;
+            background-color: var(--surface);
+            color: var(--ink);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .input-field.has-toggle { padding-right: 46px; }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 4px rgba(62, 123, 250, 0.12);
+        }
+
+        .input-field.error {
+            border-color: var(--danger);
+        }
+
+        .input-field.success {
+            border-color: var(--success);
+        }
+
+        select.input-field {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238985A3' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 36px;
+        }
+
+        .toggle-visibility {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 8px;
+            color: var(--muted);
+            line-height: 1;
+        }
+
+        .error-text {
+            color: var(--danger);
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 6px;
+            display: none;
+        }
+        .error-text.show { display: block; }
+
+        .help-text {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .password-strength {
+            display: flex;
+            gap: 4px;
+            margin-top: 8px;
+        }
+        .password-strength .bar {
+            height: 4px;
+            flex: 1;
+            background: var(--border);
+            border-radius: 2px;
+            transition: background 0.2s ease;
+        }
+        .password-strength .bar.active.weak { background: var(--danger); }
+        .password-strength .bar.active.medium { background: #F5A623; }
+        .password-strength .bar.active.strong { background: var(--success); }
+        .strength-text {
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .strength-text.weak { color: var(--danger); }
+        .strength-text.medium { color: #F5A623; }
+        .strength-text.strong { color: var(--success); }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .checkbox-group input[type="checkbox"] {
+            margin-top: 2px;
+            accent-color: var(--blue);
+        }
+        .checkbox-group label {
+            font-size: 13px;
+            color: var(--ink-soft);
+            line-height: 1.5;
+        }
+        .checkbox-group label a {
+            color: var(--blue);
+            font-weight: 600;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14.5px;
+            padding: 13px 16px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            transition: transform 0.12s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+            user-select: none;
+        }
+        .btn:active { transform: scale(0.98); }
+
+        .btn-primary {
+            background: var(--gradient);
+            color: #fff;
+            box-shadow: 0 6px 16px rgba(90, 60, 220, 0.22);
+        }
+        .btn-primary:disabled {
+            opacity: 0.55;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .spinner {
+            width: 15px;
+            height: 15px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            display: none;
+        }
+        .spinner.show { display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .login-link {
+            text-align: center;
+            font-size: 13.5px;
+            color: var(--muted);
+            margin-top: 20px;
+        }
+        .login-link a {
+            color: var(--blue);
+            font-weight: 600;
+        }
+        .login-link a:hover { text-decoration: underline; }
+
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 28px;
+            transform: translateX(-50%) translateY(20px);
+            background-color: var(--ink);
+            color: #fff;
+            padding: 11px 18px;
+            border-radius: 999px;
+            font-size: 13.5px;
+            font-weight: 600;
+            box-shadow: var(--shadow-md);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            z-index: 50;
+            white-space: nowrap;
+            max-width: 90%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 900px) {
+            #app { grid-template-columns: 1fr; }
+            .showcase { display: none; }
+            .form-panel { padding: 24px; }
+            .field-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="showcase">
+            <div class="showcase-top">
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAT4AAACKCAYAAAAzFCbnAAAE80lEQVR42u3BMQEAAADCoPVPbQ0PoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+DcAAwCxABXQy4iGAAAAAElFTkSuQmCC" alt="OptiLink logo">
+                <span>OptiLink</span>
+            </div>
+            <div class="showcase-mid">
+                <span class="showcase-tag">Staff &amp; Admin Portal</span>
+                <h1>Create your administrator account</h1>
+                <p>Set up your admin credentials to access the full OptiLink management dashboard.</p>
+                <ul class="showcase-features">
+                    <li>Role-based access control</li>
+                    <li>Multi-location management</li>
+                    <li>Real-time analytics dashboard</li>
+                </ul>
+            </div>
+            <div class="showcase-foot">&copy; 2026 OptiLink. Internal use only.</div>
+        </div>
+
+        <div class="form-panel">
+            <div class="register-wrap">
+                <div class="brand">
+                    <div class="brand-kicker">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L3 6v6c0 5 3.8 9 9 10 5.2-1 9-5 9-10V6l-9-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                        Create Account
+                    </div>
+                    <div class="brand-title">New <span class="accent">Admin</span> Account</div>
+                    <p class="brand-sub">Fill in the details below to register</p>
+                </div>
+
+                <div class="card">
+                    <form id="registerForm" onsubmit="return handleRegister(event)" novalidate>
+                        <div class="field-row">
+                            <div class="field-group">
+                                <label class="field-label" for="firstName">First Name</label>
+                                <input type="text" id="firstName" class="input-field" placeholder="John" required>
+                            </div>
+                            <div class="field-group">
+                                <label class="field-label" for="lastName">Last Name</label>
+                                <input type="text" id="lastName" class="input-field" placeholder="Doe" required>
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label" for="email">Work Email</label>
+                            <input type="text" id="email" class="input-field" placeholder="Enter your work email or username" autocomplete="username" required>
+                            <p class="help-text">Must be a valid OptiLink or partner organization email</p>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label" for="role">Admin Role</label>
+                            <select id="role" class="input-field" required>
+                                <option value="">Select your role...</option>
+                                <option value="super_admin">Super Admin</option>
+                                <option value="clinic_admin">Clinic Administrator</option>
+                                <option value="staff_manager">Staff Manager</option>
+                                <option value="inventory_manager">Inventory Manager</option>
+                                <option value="billing_admin">Billing Administrator</option>
+                            </select>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label" for="clinicId">Clinic / Location ID</label>
+                            <input type="text" id="clinicId" class="input-field" placeholder="e.g., CL-001 or OPT-HQ" required>
+                            <p class="help-text">Provided by your system administrator</p>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label" for="password">Password</label>
+                            <div class="input-wrap">
+                                <input type="password" id="password" class="input-field has-toggle" placeholder="Create a strong password" autocomplete="new-password" required minlength="8">
+                                <button type="button" class="toggle-visibility" id="togglePwBtn" onclick="togglePasswordVisibility('password', 'togglePwBtn')" aria-label="Show password">👁️</button>
+                            </div>
+                            <div class="password-strength" id="passwordStrength">
+                                <div class="bar" id="bar1"></div>
+                                <div class="bar" id="bar2"></div>
+                                <div class="bar" id="bar3"></div>
+                                <div class="bar" id="bar4"></div>
+                            </div>
+                            <p class="strength-text" id="strengthText"></p>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label" for="confirmPassword">Confirm Password</label>
+                            <div class="input-wrap">
+                                <input type="password" id="confirmPassword" class="input-field has-toggle" placeholder="Re-enter your password" autocomplete="new-password" required>
+                                <button type="button" class="toggle-visibility" id="toggleConfirmBtn" onclick="togglePasswordVisibility('confirmPassword', 'toggleConfirmBtn')" aria-label="Show password">👁️</button>
+                            </div>
+                            <p class="error-text" id="confirmError">Passwords do not match</p>
+                        </div>
+
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="termsCheck" required>
+                            <label for="termsCheck">I agree to the <a href="#" onclick="showToast('Terms of Service document')">Terms of Service</a>, <a href="#" onclick="showToast('Privacy Policy document')">Privacy Policy</a>, and <a href="#" onclick="showToast('HIPAA Compliance document')">HIPAA Compliance Agreement</a></label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" id="registerBtn">
+                            <span class="spinner" id="registerSpinner"></span>
+                            <span id="registerBtnText">Create Admin Account</span>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="login-link">
+                    Already have an account? <a href="admin-login.html">Sign in here</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="toast" id="toast"></div>
+    </div>
+
+    <script>
+        // Toggle password visibility
+        function togglePasswordVisibility(inputId, btnId) {
+            const input = document.getElementById(inputId);
+            const btn = document.getElementById(btnId);
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+            btn.textContent = isPassword ? '🙈' : '👁️';
+        }
+
+        // Password strength checker
+        const passwordInput = document.getElementById('password');
+        const confirmInput = document.getElementById('confirmPassword');
+        const strengthText = document.getElementById('strengthText');
+        const bars = [
+            document.getElementById('bar1'),
+            document.getElementById('bar2'),
+            document.getElementById('bar3'),
+            document.getElementById('bar4')
+        ];
+
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            const strength = checkPasswordStrength(password);
+            updateStrengthUI(strength);
+            validateConfirmPassword();
+        });
+
+        confirmInput.addEventListener('input', validateConfirmPassword);
+
+        function checkPasswordStrength(password) {
+            let score = 0;
+            if (password.length >= 8) score++;
+            if (password.length >= 12) score++;
+            if (/[A-Z]/.test(password)) score++;
+            if (/[0-9]/.test(password)) score++;
+            if (/[^A-Za-z0-9]/.test(password)) score++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password) && /[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password)) score++;
+
+            if (score <= 2) return 'weak';
+            if (score <= 4) return 'medium';
+            return 'strong';
+        }
+
+        function updateStrengthUI(strength) {
+            // Reset all bars
+            bars.forEach(bar => {
+                bar.className = 'bar';
+            });
+
+            // Reset strength text
+            strengthText.className = 'strength-text';
+            strengthText.textContent = '';
+
+            if (!passwordInput.value) return;
+
+            const activeBars = strength === 'weak' ? 2 : strength === 'medium' ? 3 : 4;
+            
+            for (let i = 0; i < activeBars; i++) {
+                bars[i].classList.add('active', strength);
+            }
+
+            strengthText.classList.add(strength);
+            strengthText.textContent = strength === 'weak' ? 'Weak password' : 
+                                       strength === 'medium' ? 'Medium strength' : 
+                                       'Strong password';
+        }
+
+        function validateConfirmPassword() {
+            const confirmError = document.getElementById('confirmError');
+            const confirmField = document.getElementById('confirmPassword');
+            
+            if (confirmInput.value && confirmInput.value !== passwordInput.value) {
+                confirmError.classList.add('show');
+                confirmField.classList.add('error');
+                confirmField.classList.remove('success');
+            } else if (confirmInput.value && confirmInput.value === passwordInput.value) {
+                confirmError.classList.remove('show');
+                confirmField.classList.remove('error');
+                confirmField.classList.add('success');
+            } else {
+                confirmError.classList.remove('show');
+                confirmField.classList.remove('error', 'success');
+            }
+        }
+
+        // Email domain validation
+        const emailInput = document.getElementById('email');
+       emailInput.addEventListener('blur', function() {
+    const email = this.value.trim();
+    if (email) {
+        this.classList.remove('error');
+        this.classList.add('success');
+    } else {
+        this.classList.remove('success', 'error');
+    }
+});
+
+        // Form submission
+        async function handleRegister(evt) {
+            evt.preventDefault();
+            
+            const btn = document.getElementById('registerBtn');
+            const spinner = document.getElementById('registerSpinner');
+            const text = document.getElementById('registerBtnText');
+            
+            // Get form values
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const role = document.getElementById('role').value;
+            const clinicId = document.getElementById('clinicId').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const termsAccepted = document.getElementById('termsCheck').checked;
+
+            // Validation
+            if (!firstName || !lastName || !email || !role || !clinicId || !password || !confirmPassword) {
+                showToast('Please fill in all required fields');
+                return false;
+            }
+
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match');
+                document.getElementById('confirmError').classList.add('show');
+                return false;
+            }
+
+            if (!termsAccepted) {
+                showToast('Please accept the Terms of Service and Privacy Policy');
+                return false;
+            }
+
+            if (checkPasswordStrength(password) === 'weak') {
+                showToast('Please choose a stronger password');
+                return false;
+            }
+
+            // Disable button and show loading state
+            btn.disabled = true;
+            spinner.classList.add('show');
+            text.textContent = 'Creating account…';
+
+            try {
+                const resp = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        firstName,
+                        lastName,
+                        email,
+                        role,
+                        clinicId,
+                        password
+                    })
+                });
+
+                const data = await resp.json();
+
+                if (!resp.ok) {
+                    showToast(data.error || 'Registration failed. Please try again.');
+                    btn.disabled = false;
+                    spinner.classList.remove('show');
+                    text.textContent = 'Create Admin Account';
+                    return false;
+                }
+
+                showToast('✅ Account created successfully! Redirecting...');
+                setTimeout(() => {
+                    window.location.href = 'admin-login.html';
+                }, 1500);
+
+            } catch (err) {
+                showToast('Network error — please check your connection');
+                btn.disabled = false;
+                spinner.classList.remove('show');
+                text.textContent = 'Create Admin Account';
+            }
+
+            return false;
+        }
+
+        // Toast notification
+        let toastTimer = null;
+        function showToast(msg) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+        }
+
+        // Prevent form submission on Enter key for better UX
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.tagName === 'INPUT' && e.target.type !== 'submit') {
+                e.preventDefault();
+                // Move to next field or submit if last field
+                const form = document.getElementById('registerForm');
+                const inputs = Array.from(form.querySelectorAll('input:not([type="checkbox"]), select'));
+                const currentIndex = inputs.indexOf(e.target);
+                if (currentIndex < inputs.length - 1) {
+                    inputs[currentIndex + 1].focus();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

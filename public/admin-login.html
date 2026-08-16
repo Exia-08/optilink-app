@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Sign In - OptiLink</title>
+    <style>
+        :root {
+            --blue: #3E7BFA;
+            --violet: #8B3FF0;
+            --ink: #1B1730;
+            --ink-soft: #4B4768;
+            --muted: #8985A3;
+            --bg: #FAFAFD;
+            --surface: #FFFFFF;
+            --surface-alt: #F2F0FB;
+            --border: #E7E4F5;
+            --danger: #E5484D;
+            --danger-bg: #FDEBEC;
+            --gradient: linear-gradient(120deg, var(--blue), var(--violet));
+            --shadow-sm: 0 1px 2px rgba(27, 23, 48, 0.06);
+            --shadow-md: 0 8px 24px rgba(60, 40, 130, 0.10);
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.45;
+            color: var(--ink);
+            background-color: var(--bg);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        button, input { font-family: inherit; }
+        a { color: inherit; text-decoration: none; }
+
+        /* PC / desktop viewport: full-bleed split layout, no mobile app shell */
+        #app {
+            min-height: 100vh;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+        }
+
+        /* Left showcase panel (desktop branding side) */
+        .showcase {
+            position: relative;
+            background: var(--gradient);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 56px 64px;
+            color: #fff;
+            overflow: hidden;
+        }
+        .showcase::before {
+            content: '';
+            position: absolute;
+            width: 520px;
+            height: 520px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+            top: -180px;
+            right: -160px;
+        }
+        .showcase::after {
+            content: '';
+            position: absolute;
+            width: 360px;
+            height: 360px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+            bottom: -140px;
+            left: -100px;
+        }
+        .showcase-top {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .showcase-top img {
+            width: 42px;
+            height: auto;
+            filter: brightness(0) invert(1);
+        }
+        .showcase-top span {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .showcase-mid {
+            position: relative;
+            z-index: 1;
+            max-width: 460px;
+        }
+        .showcase-tag {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            background: rgba(255,255,255,0.16);
+            padding: 6px 12px;
+            border-radius: 999px;
+            margin-bottom: 18px;
+        }
+        .showcase-mid h1 {
+            font-size: 34px;
+            font-weight: 700;
+            line-height: 1.25;
+            margin: 0 0 14px;
+            letter-spacing: -0.01em;
+        }
+        .showcase-mid p {
+            font-size: 15.5px;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.86);
+            margin: 0;
+        }
+        .showcase-stats {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            gap: 36px;
+        }
+        .showcase-stats div strong {
+            display: block;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .showcase-stats div span {
+            font-size: 12.5px;
+            color: rgba(255,255,255,0.78);
+        }
+        .showcase-foot {
+            position: relative;
+            z-index: 1;
+            font-size: 12.5px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        /* Right form panel */
+        .form-panel {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            background-color: var(--bg);
+        }
+
+        .login-wrap {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .brand {
+            text-align: left;
+            margin-bottom: 28px;
+        }
+
+        .brand-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--violet);
+            background: var(--surface-alt);
+            padding: 5px 10px;
+            border-radius: 999px;
+            margin-bottom: 14px;
+        }
+        .brand-kicker svg { width: 13px; height: 13px; }
+
+        .brand-title {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+        .brand-title .accent {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .brand-sub {
+            color: var(--muted);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .card {
+            background-color: var(--surface);
+            border-radius: 16px;
+            padding: 26px 24px 24px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .field-label {
+            font-weight: 600;
+            font-size: 13px;
+            display: block;
+            margin-bottom: 6px;
+            color: var(--ink-soft);
+        }
+
+        .field-group {
+            margin-bottom: 16px;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 14.5px;
+            box-sizing: border-box;
+            background-color: var(--surface);
+            color: var(--ink);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .input-field.has-toggle { padding-right: 46px; }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 4px rgba(62, 123, 250, 0.12);
+        }
+
+        .input-field.error {
+            border-color: var(--danger);
+        }
+
+        .toggle-visibility {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 8px;
+            color: var(--muted);
+            line-height: 1;
+        }
+
+        .error-text {
+            color: var(--danger);
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 6px;
+            display: none;
+        }
+        .error-text.show { display: block; }
+
+        .btn {
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14.5px;
+            padding: 13px 16px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            transition: transform 0.12s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+            user-select: none;
+        }
+        .btn:active { transform: scale(0.98); }
+
+        .btn-primary {
+            background: var(--gradient);
+            color: #fff;
+            box-shadow: 0 6px 16px rgba(90, 60, 220, 0.22);
+            margin-top: 4px;
+        }
+        .btn-primary:disabled {
+            opacity: 0.55;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--blue);
+            border: 1.5px solid var(--border);
+            box-shadow: none;
+            margin-top: 8px;
+        }
+        .btn-outline:hover {
+            border-color: var(--blue);
+            background-color: var(--surface-alt);
+        }
+
+        .spinner {
+            width: 15px;
+            height: 15px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            display: none;
+        }
+        .spinner.show { display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .forgot-row {
+            text-align: right;
+            margin-top: -8px;
+            margin-bottom: 18px;
+        }
+
+        .link-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--blue);
+            cursor: pointer;
+        }
+        .link-btn:active { opacity: 0.7; }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 22px 0 18px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background-color: var(--border);
+        }
+
+        .signup-row {
+            text-align: center;
+            font-size: 13.5px;
+            color: var(--muted);
+        }
+
+        .back-row {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 13px;
+        }
+        .back-row a {
+            color: var(--muted);
+            font-weight: 600;
+        }
+        .back-row a:hover { color: var(--ink); }
+
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 28px;
+            transform: translateX(-50%) translateY(20px);
+            background-color: var(--ink);
+            color: #fff;
+            padding: 11px 18px;
+            border-radius: 999px;
+            font-size: 13.5px;
+            font-weight: 600;
+            box-shadow: var(--shadow-md);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            z-index: 50;
+            white-space: nowrap;
+            max-width: 90%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Collapse to single column below desktop widths */
+        @media (max-width: 900px) {
+            #app { grid-template-columns: 1fr; }
+            .showcase { display: none; }
+            .form-panel { padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="showcase">
+            <div class="showcase-top">
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAT4AAACKCAYAAAAzFCbnAAAE80lEQVR42u3BMQEAAADCoPVPbQ0PoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+DcAAwCxABXQy4iGAAAAAElFTkSuQmCC" alt="OptiLink logo">
+                <span>OptiLink</span>
+            </div>
+            <div class="showcase-mid">
+                <span class="showcase-tag">Staff &amp; Admin Portal</span>
+                <h1>Manage every clinic, patient, and order from one dashboard.</h1>
+                <p>Sign in with your administrator credentials to access scheduling, patient records, inventory, and reporting tools across all OptiLink locations.</p>
+            </div>
+            <div class="showcase-stats">
+                <div>
+                    <strong>24/7</strong>
+                    <span>System access</span>
+                </div>
+                <div>
+                    <strong>256-bit</strong>
+                    <span>Encrypted sessions</span>
+                </div>
+                <div>
+                    <strong>Role-based</strong>
+                    <span>Access control</span>
+                </div>
+            </div>
+            <div class="showcase-foot">&copy; 2026 OptiLink. Internal use only.</div>
+        </div>
+
+        <div class="form-panel">
+            <div class="login-wrap">
+                <div class="brand">
+                    <div class="brand-kicker">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L3 6v6c0 5 3.8 9 9 10 5.2-1 9-5 9-10V6l-9-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                        Admin Access
+                    </div>
+                    <div class="brand-title">Opti<span class="accent">Link</span> Admin</div>
+                    <p class="brand-sub">Sign in to the staff management console</p>
+                </div>
+
+                <div class="card">
+                    <form id="loginForm" onsubmit="return handleLogin(event)" novalidate>
+                        <div class="field-group" id="identifierGroup">
+                            <label class="field-label" for="identifier">Admin Email</label>
+                            <input type="email" id="identifier" class="input-field" placeholder="admin@optilink.com" autocomplete="username">
+                            <p class="error-text" id="identifierError">Please enter your admin credentials.</p>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label" for="password">Password</label>
+                            <div class="input-wrap">
+                                <input type="password" id="password" class="input-field has-toggle" placeholder="Enter your password" autocomplete="current-password">
+                                <button type="button" class="toggle-visibility" id="toggleBtn" onclick="togglePassword()" aria-label="Show password">👁️</button>
+                            </div>
+                        </div>
+
+                        <div class="forgot-row">
+                            <button type="button" class="link-btn" onclick="showToast('Password reset link sent')">Forgot password?</button>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" id="loginBtn">
+                            <span class="spinner" id="loginSpinner"></span>
+                            <span id="loginBtnText">Log In</span>
+                        </button>
+
+                        <button type="button" class="btn btn-outline" onclick="handleNewAccount()">
+                            ➕ New Account
+                        </button>
+                    </form>
+
+                    <div class="divider">SECURE ADMIN LOGIN</div>
+
+                    <div class="signup-row">
+                        Need help? <a href="#" onclick="showToast('Contact system administrator')">Contact support</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="toast" id="toast"></div>
+    </div>
+
+    <script>
+        let passwordVisible = false;
+
+        function togglePassword() {
+            passwordVisible = !passwordVisible;
+            const pw = document.getElementById('password');
+            const btn = document.getElementById('toggleBtn');
+            pw.type = passwordVisible ? 'text' : 'password';
+            btn.textContent = passwordVisible ? '🙈' : '👁️';
+        }
+
+        function handleNewAccount() {
+            // Redirect to the new account/registration page
+            window.location.href = 'new-account-admin.html';
+        }
+
+        async function handleLogin(evt) {
+            evt.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            const spinner = document.getElementById('loginSpinner');
+            const text = document.getElementById('loginBtnText');
+            const email = document.getElementById('identifier').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                showToast('Please enter your admin email and password');
+                return false;
+            }
+
+            btn.disabled = true;
+            spinner.classList.add('show');
+            text.textContent = 'Signing in…';
+
+            try {
+                const resp = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, role: 'admin' })
+                });
+                const data = await resp.json();
+
+                if (!resp.ok) {
+                    showToast(data.error || 'Login failed');
+                    btn.disabled = false;
+                    spinner.classList.remove('show');
+                    text.textContent = 'Log In';
+                    return false;
+                }
+
+                showToast('Signed in successfully');
+                setTimeout(() => {
+                    window.location.href = 'adminoptilink.html';
+                }, 500);
+            } catch (err) {
+                showToast('Network error — is the server running?');
+                btn.disabled = false;
+                spinner.classList.remove('show');
+                text.textContent = 'Log In';
+            }
+
+            return false;
+        }
+
+        let toastTimer = null;
+        function showToast(msg) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
+        }
+    </script>
+</body>
+</html>
