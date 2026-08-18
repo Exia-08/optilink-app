@@ -80,32 +80,10 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// Admin registration
-router.post('/register', async (req, res) => {
-    try {
-        const { firstName, lastName, email, role, clinicId, password } = req.body;
-        if (!firstName || !lastName || !email || !role || !clinicId || !password) {
-            return res.status(400).json({ error: 'All fields are required' });
-        }
-        const existing = await User.findOne({ email });
-        if (existing) return res.status(400).json({ error: 'Email already registered' });
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const fullName = `${firstName} ${lastName}`;
-        const user = await User.create({
-            fullName,
-            email,
-            password: hashedPassword,
-            role: 'admin',
-            adminRole: role,
-            clinicId
-        });
-
-        res.status(201).json({ message: 'Admin account created' });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Server error' });
-    }
+// Admin registration is intentionally disabled for security.
+// To create an admin account, use a controlled seed script or insert directly into MongoDB Atlas.
+router.post('/register', (req, res) => {
+    res.status(403).json({ error: 'Admin registration is disabled' });
 });
 
 // Get current user
