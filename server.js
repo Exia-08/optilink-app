@@ -8,14 +8,18 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Determine which public folder to serve based on APP_TYPE
+const APP_TYPE = process.env.APP_TYPE || 'client';
+const PUBLIC_DIR = APP_TYPE === 'admin' ? 'admin_public' : 'client_public';
+
 // Middleware
 app.use(cors({ credentials: true, origin: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Serve static HTML files
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files from the appropriate folder
+app.use(express.static(path.join(__dirname, PUBLIC_DIR)));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
@@ -41,7 +45,7 @@ app.use('/api/stock', stockRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Seed stock data if empty
+// Seed stock data if the collection is empty
 const StockItem = require('./models/StockItem');
 async function seedStock() {
     try {
@@ -74,9 +78,10 @@ async function seedStock() {
 }
 seedStock();
 
-// All other routes serve the SPA entry point
+// Catch-all: serve the appropriate entry HTML file
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    const entryFile = APP_TYPE === 'admin' ? 'admin-login.html' : 'index.html';
+    res.sendFile(path.join(__dirname, PUBLIC_DIR, entryFile));
 });
 
 app.listen(PORT, () => {
