@@ -50,7 +50,7 @@ router.post('/login', async (req, res) => {
         const identifier = username || email;
 
         if (!identifier || !password) {
-            return res.status(400).json({ error: 'Username/email and password required' });
+            return res.status(400).json({ error: 'Username and password required' });
         }
 
         const user = await User.findOne({
