@@ -46,10 +46,17 @@ router.post('/signup', async (req, res) => {
 // Login (client or admin)
 router.post('/login', async (req, res) => {
     try {
-        const { email, password, role } = req.body;
-        if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+        const { username, email, password, role } = req.body;
+        const identifier = username || email;
 
-        const user = await User.findOne({ email });
+        if (!identifier || !password) {
+            return res.status(400).json({ error: 'Username/email and password required' });
+        }
+
+        const user = await User.findOne({
+            $or: [{ username: identifier }, { email: identifier }]
+        });
+
         if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
         const isMatch = await bcrypt.compare(password, user.password);
@@ -66,6 +73,7 @@ router.post('/login', async (req, res) => {
                 id: user._id,
                 fullName: user.fullName,
                 email: user.email,
+                username: user.username,
                 phone: user.phone,
                 role: user.role,
                 settings: user.settings,
