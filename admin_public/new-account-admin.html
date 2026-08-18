@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Admin Account - OptiLink</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+            background: #FAFAFD;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: white;
+            border: 1px solid #E7E4F5;
+            border-radius: 16px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 8px 24px rgba(60, 40, 130, 0.10);
+        }
+        h1 {
+            font-size: 22px;
+            margin: 0 0 6px;
+        }
+        p.sub {
+            color: #8985A3;
+            font-size: 14px;
+            margin: 0 0 20px;
+        }
+        label {
+            font-weight: 600;
+            font-size: 13px;
+            display: block;
+            margin-bottom: 4px;
+        }
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1.5px solid #E7E4F5;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 14px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(120deg, #3E7BFA, #8B3FF0);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1B1730;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 999px;
+            font-size: 13px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Create Admin Account</h1>
+        <p class="sub">Temporary registration — use only once.</p>
+        <form id="registerForm">
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" required>
+
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" required>
+
+            <label for="email">Email</label>
+            <input type="email" id="email" required>
+
+            <label for="role">Role</label>
+            <input type="text" id="role" value="super_admin" required>
+
+            <label for="clinicId">Clinic ID</label>
+            <input type="text" id="clinicId" required>
+
+            <label for="password">Password</label>
+            <input type="password" id="password" required minlength="8">
+
+            <button type="submit" id="submitBtn">Create Account</button>
+        </form>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function showToast(msg) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 3000);
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Creating...';
+
+            const payload = {
+                firstName: document.getElementById('firstName').value.trim(),
+                lastName: document.getElementById('lastName').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                role: document.getElementById('role').value.trim(),
+                clinicId: document.getElementById('clinicId').value.trim(),
+                password: document.getElementById('password').value
+            };
+
+            try {
+                const resp = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await resp.json();
+                if (!resp.ok) {
+                    showToast(data.error || 'Registration failed');
+                } else {
+                    showToast('✅ Admin created! Username is: ' + payload.email.split('@')[0]);
+                }
+            } catch (err) {
+                showToast('Network error — server not reachable');
+            }
+            btn.disabled = false;
+            btn.textContent = 'Create Account';
+        });
+    </script>
+</body>
+</html>
