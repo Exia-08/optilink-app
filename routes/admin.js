@@ -80,18 +80,18 @@ router.get('/appointments', requireAdmin, async (req, res) => {
     if (!ClientAppointment) return res.status(500).json({ error: 'Client DB not connected' });
     const appointments = await ClientAppointment.find().sort({ createdAt: -1 });
     res.json({
-        appointments: appointments.map(a => ({
-            id: a._id,
-            name: a.fullName,
-            type: a.type,
-            date: a.date,
-            time: a.time,
-            status: a.status,
-            email: a.email,
-            phone: a.phone,
-            notes: a.notes,
-            clinic: a.clinic,
-            clinicAddress: a.clinicAddress
+       appointments.map(a => ({
+        id: a._id,
+        name: a.fullName,
+        type: a.type,
+        date: a.date,
+        time: a.time,
+        status: a.status,
+        email: a.email,
+        phone: a.phone,
+        notes: a.notes,
+        clinic: a.clinic,
+        clinicAddress: a.clinicAddress
         }))
     });
 });
@@ -135,14 +135,54 @@ router.get('/documents', requireAdmin, async (req, res) => {
 
 // ✅ Summary (appointments + low stock from client DB, clients from admin DB)
 router.get('/summary', requireAdmin, async (req, res) => {
-    if (!ClientAppointment || !ClientStockItem) return res.status(500).json({ error: 'Client DB not connected' });
+    if (!ClientAppointment || !ClientStockItem) {
+        return res.status(500).json({ error: 'Client DB not connected' });
+    }
 
     const totalAppointments = await ClientAppointment.countDocuments();
     const pending = await ClientAppointment.countDocuments({ status: 'Pending' });
     const lowStock = await ClientStockItem.countDocuments({ quantity: { $lt: 10 } });
     const totalClients = await User.countDocuments({ role: 'client' });
 
-    res.json({ totalAppointments, pending, totalClients, lowStock });
+    // Calculate appointments for the current week (Mon-Sun)
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setHours(0,0,0,0);
+    const day = startOfWeek.getDay(); // 0=Sun,1=Mon,...
+    const diff = (day === 0 ? -6 : 1 - day); // Monday
+    startOfWeek.setDate(startOfWeek.getDate() + diff);
+
+    const weeklyAppointments = [
+        { label: 'Mon', value: 0 },
+        { label: 'Tue', value: 0 },
+        { label: 'Wed', value: 0 },
+        { label: 'Thu', value: 0 },
+        { label: 'Fri', value: 0 },
+        { label: 'Sat', value: 0 },
+        { label: 'Sun', value: 0 }
+    ];
+
+    const allAppointments = await ClientAppointment.find({});
+    allAppointments.forEach(app => {
+        if (!app.date) return;
+        const appDate = new Date(app.date);
+        if (isNaN(appDate)) return;
+        const appDayIndex = (appDate.getDay() + 6) % 7; // Mon=0, Sun=6
+        const startOfWeekCopy = new Date(startOfWeek);
+        const endOfWeek = new Date(startOfWeekCopy);
+        endOfWeek.setDate(endOfWeek.getDate() + 7);
+        if (appDate >= startOfWeek && appDate < endOfWeek) {
+            weeklyAppointments[appDayIndex].value += 1;
+        }
+    });
+
+    res.json({
+        totalAppointments,
+        pending,
+        totalClients,
+        lowStock,
+        weeklyAppointments
+    });
 });
 
 module.exports = router;
