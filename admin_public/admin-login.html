@@ -23,11 +23,7 @@
         }
 
         * { box-sizing: border-box; }
-
-        html, body {
-            height: 100%;
-        }
-
+        html, body { height: 100%; }
         body {
             margin: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -37,11 +33,9 @@
             background-color: var(--bg);
             -webkit-font-smoothing: antialiased;
         }
-
         button, input { font-family: inherit; }
         a { color: inherit; text-decoration: none; }
 
-        /* PC / desktop viewport: full-bleed split layout, no mobile app shell */
         #app {
             min-height: 100vh;
             width: 100%;
@@ -49,7 +43,6 @@
             grid-template-columns: 1.1fr 1fr;
         }
 
-        /* Left showcase panel (desktop branding side) */
         .showcase {
             position: relative;
             background: var(--gradient);
@@ -147,7 +140,6 @@
             color: rgba(255,255,255,0.7);
         }
 
-        /* Right form panel */
         .form-panel {
             display: flex;
             align-items: center;
@@ -244,10 +236,6 @@
             box-shadow: 0 0 0 4px rgba(62, 123, 250, 0.12);
         }
 
-        .input-field.error {
-            border-color: var(--danger);
-        }
-
         .toggle-visibility {
             position: absolute;
             right: 6px;
@@ -261,15 +249,6 @@
             color: var(--muted);
             line-height: 1;
         }
-
-        .error-text {
-            color: var(--danger);
-            font-size: 12px;
-            font-weight: 600;
-            margin-top: 6px;
-            display: none;
-        }
-        .error-text.show { display: block; }
 
         .btn {
             border: none;
@@ -299,18 +278,6 @@
             box-shadow: none;
             cursor: not-allowed;
             transform: none;
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: var(--blue);
-            border: 1.5px solid var(--border);
-            box-shadow: none;
-            margin-top: 8px;
-        }
-        .btn-outline:hover {
-            border-color: var(--blue);
-            background-color: var(--surface-alt);
         }
 
         .spinner {
@@ -364,17 +331,6 @@
             color: var(--muted);
         }
 
-        .back-row {
-            margin-top: 20px;
-            text-align: center;
-            font-size: 13px;
-        }
-        .back-row a {
-            color: var(--muted);
-            font-weight: 600;
-        }
-        .back-row a:hover { color: var(--ink); }
-
         .toast {
             position: fixed;
             left: 50%;
@@ -401,7 +357,6 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        /* Collapse to single column below desktop widths */
         @media (max-width: 900px) {
             #app { grid-template-columns: 1fr; }
             .showcase { display: none; }
@@ -422,18 +377,9 @@
                 <p>Sign in with your administrator credentials to access scheduling, patient records, inventory, and reporting tools across all OptiLink locations.</p>
             </div>
             <div class="showcase-stats">
-                <div>
-                    <strong>24/7</strong>
-                    <span>System access</span>
-                </div>
-                <div>
-                    <strong>256-bit</strong>
-                    <span>Encrypted sessions</span>
-                </div>
-                <div>
-                    <strong>Role-based</strong>
-                    <span>Access control</span>
-                </div>
+                <div><strong>24/7</strong><span>System access</span></div>
+                <div><strong>256-bit</strong><span>Encrypted sessions</span></div>
+                <div><strong>Role-based</strong><span>Access control</span></div>
             </div>
             <div class="showcase-foot">&copy; 2026 OptiLink. Internal use only.</div>
         </div>
@@ -449,21 +395,20 @@
                     <p class="brand-sub">Sign in to the staff management console</p>
                 </div>
 
-               <div class="field-group" id="identifierGroup">
-                        <label class="field-label" for="identifier">Username</label>
-                        <input type="text" id="identifier" class="input-field" placeholder="Enter your username" autocomplete="username">
-                            <p class="error-text" id="identifierError">Please enter your admin credentials.</p>
-                </div>
+                <div class="card">
+                    <form id="loginForm" onsubmit="return handleLogin(event)" novalidate>
+                        <div class="field-group">
+                            <label class="field-label" for="identifier">Username</label>
+                            <input type="text" id="identifier" class="input-field" placeholder="Enter your username" autocomplete="username">
+                            <p class="error-text" id="identifierError" style="display:none; color: var(--danger); font-size: 12px; margin-top: 6px;">Please enter your admin credentials.</p>
+                        </div>
 
                         <div class="field-group">
                             <label class="field-label" for="password">Password</label>
                             <div class="input-wrap">
                                 <input type="password" id="password" class="input-field has-toggle" placeholder="Enter your password" autocomplete="current-password">
-                               <button type="button" class="toggle-visibility" id="toggleBtn" onclick="togglePassword()" aria-label="Show password">
-                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                <circle cx="12" cy="12" r="3"></circle>
-                              </svg>
+                                <button type="button" class="toggle-visibility" id="toggleBtn" onclick="togglePassword()" aria-label="Show password">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                                 </button>
                             </div>
                         </div>
@@ -476,10 +421,9 @@
                             <span class="spinner" id="loginSpinner"></span>
                             <span id="loginBtnText">Log In</span>
                         </button>
-
-                        
                     </form>
 
+                    <div class="divider">SECURE ADMIN LOGIN</div>
 
                     <div class="signup-row">
                         Need help? <a href="#" onclick="showToast('Contact system administrator')">Contact support</a>
@@ -495,18 +439,18 @@
         let passwordVisible = false;
 
         function togglePassword() {
-    passwordVisible = !passwordVisible;
-    const pw = document.getElementById('password');
-    const btn = document.getElementById('toggleBtn');
-    pw.type = passwordVisible ? 'text' : 'password';
+            passwordVisible = !passwordVisible;
+            const pw = document.getElementById('password');
+            const btn = document.getElementById('toggleBtn');
+            pw.type = passwordVisible ? 'text' : 'password';
 
-    btn.innerHTML = passwordVisible
-        ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`
-        : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+            btn.innerHTML = passwordVisible
+                ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`
+                : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
 
-    btn.setAttribute('aria-label', passwordVisible ? 'Hide password' : 'Show password');
-}
-       
+            btn.setAttribute('aria-label', passwordVisible ? 'Hide password' : 'Show password');
+        }
+
         async function handleLogin(evt) {
             evt.preventDefault();
             const btn = document.getElementById('loginBtn');
