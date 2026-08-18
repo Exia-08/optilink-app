@@ -449,13 +449,11 @@
                     <p class="brand-sub">Sign in to the staff management console</p>
                 </div>
 
-                <div class="card">
-                    <form id="loginForm" onsubmit="return handleLogin(event)" novalidate>
-                        <div class="field-group" id="identifierGroup">
-                            <label class="field-label" for="identifier">Admin Email</label>
-                            <input type="email" id="identifier" class="input-field" placeholder="admin@optilink.com" autocomplete="username">
+               <div class="field-group" id="identifierGroup">
+                        <label class="field-label" for="identifier">Username</label>
+                        <input type="text" id="identifier" class="input-field" placeholder="Enter your username" autocomplete="username">
                             <p class="error-text" id="identifierError">Please enter your admin credentials.</p>
-                        </div>
+                </div>
 
                         <div class="field-group">
                             <label class="field-label" for="password">Password</label>
@@ -514,11 +512,11 @@
             const btn = document.getElementById('loginBtn');
             const spinner = document.getElementById('loginSpinner');
             const text = document.getElementById('loginBtnText');
-            const email = document.getElementById('identifier').value.trim();
+            const username = document.getElementById('identifier').value.trim();
             const password = document.getElementById('password').value;
 
-            if (!email || !password) {
-                showToast('Please enter your admin email and password');
+            if (!username || !password) {
+                showToast('Please enter your username and password');
                 return false;
             }
 
@@ -530,7 +528,7 @@
                 const resp = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password, role: 'admin' })
+                    body: JSON.stringify({ username, password, role: 'admin' })
                 });
                 const data = await resp.json();
 
