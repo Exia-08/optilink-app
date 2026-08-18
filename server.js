@@ -4,33 +4,38 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+const { initClientDB } = require('./clientDB');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Determine which public folder to serve based on APP_TYPE
 const APP_TYPE = process.env.APP_TYPE || 'client';
 const PUBLIC_DIR = APP_TYPE === 'admin' ? 'admin_public' : 'client_public';
 
-// Middleware
 app.use(cors({ credentials: true, origin: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Serve static files from the appropriate folder
 app.use(express.static(path.join(__dirname, PUBLIC_DIR)));
 
-// Connect to MongoDB
+// Connect to the primary database
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 })
-.then(() => console.log('✅ MongoDB connected'))
+.then(() => {
+    console.log('✅ Primary MongoDB connected');
+})
 .catch(err => {
-    console.error('❌ MongoDB connection error:', err);
+    console.error('❌ Primary MongoDB connection error:', err);
     process.exit(1);
 });
+
+// If this is the admin service, connect to the client DB as well
+if (APP_TYPE === 'admin' && process.env.CLIENT_MONGODB_URI) {
+    initClientDB(process.env.CLIENT_MONGODB_URI);
+}
 
 // Routes
 const authRoutes = require('./routes/auth');
@@ -45,7 +50,6 @@ app.use('/api/stock', stockRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Seed stock data if the collection is empty
 const StockItem = require('./models/StockItem');
 async function seedStock() {
     try {
@@ -78,7 +82,6 @@ async function seedStock() {
 }
 seedStock();
 
-// Catch-all: serve the appropriate entry HTML file
 app.get('*', (req, res) => {
     const entryFile = APP_TYPE === 'admin' ? 'admin-login.html' : 'index.html';
     res.sendFile(path.join(__dirname, PUBLIC_DIR, entryFile));
