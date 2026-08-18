@@ -474,9 +474,7 @@
                             <span id="loginBtnText">Log In</span>
                         </button>
 
-                        <button type="button" class="btn btn-outline" onclick="handleNewAccount()">
-                            ➕ New Account
-                        </button>
+                        
                     </form>
 
                     <div class="divider">SECURE ADMIN LOGIN</div>
@@ -502,11 +500,7 @@
             btn.textContent = passwordVisible ? '🙈' : '👁️';
         }
 
-        function handleNewAccount() {
-            // Redirect to the new account/registration page
-            window.location.href = 'new-account-admin.html';
-        }
-
+       
         async function handleLogin(evt) {
             evt.preventDefault();
             const btn = document.getElementById('loginBtn');
