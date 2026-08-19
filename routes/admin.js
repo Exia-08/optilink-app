@@ -25,11 +25,10 @@ async function requireAdmin(req, res, next) {
     next();
 }
 
-// Get the client DB connection and define models for client data
 const clientConn = getClientConnection();
 
 const appointmentSchema = new mongoose.Schema({
-    userId: mongoose.Schema.Types.ObjectId,
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     fullName: String,
     email: String,
     phone: String,
@@ -55,7 +54,7 @@ const stockItemSchema = new mongoose.Schema({
 });
 
 const documentSchema = new mongoose.Schema({
-    userId: mongoose.Schema.Types.ObjectId,
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     clientEmail: String,
     name: String,
     summary: String,
@@ -75,23 +74,23 @@ if (clientConn) {
     ClientDocument = clientConn.model('Document', documentSchema);
 }
 
-// ✅ Appointments (from client DB)
+// ✅ Appointments
 router.get('/appointments', requireAdmin, async (req, res) => {
     if (!ClientAppointment) return res.status(500).json({ error: 'Client DB not connected' });
     const appointments = await ClientAppointment.find().sort({ createdAt: -1 });
     res.json({
-       appointments.map(a => ({
-        id: a._id,
-        name: a.fullName,
-        type: a.type,
-        date: a.date,
-        time: a.time,
-        status: a.status,
-        email: a.email,
-        phone: a.phone,
-        notes: a.notes,
-        clinic: a.clinic,
-        clinicAddress: a.clinicAddress
+        appointments: appointments.map(a => ({
+            id: a._id,
+            name: a.fullName,
+            type: a.type,
+            date: a.date,
+            time: a.time,
+            status: a.status,
+            email: a.email,
+            phone: a.phone,
+            notes: a.notes,
+            clinic: a.clinic,
+            clinicAddress: a.clinicAddress
         }))
     });
 });
@@ -99,11 +98,20 @@ router.get('/appointments', requireAdmin, async (req, res) => {
 router.put('/appointments/:id/status', requireAdmin, async (req, res) => {
     if (!ClientAppointment) return res.status(500).json({ error: 'Client DB not connected' });
     const { status } = req.body;
-    const appointment = await ClientAppointment.findByIdAndUpdate(req.params.id, { status }, { new: true });
-    res.json({ appointment });
+    try {
+        const appointment = await ClientAppointment.findByIdAndUpdate(
+            req.params.id,
+            { status },
+            { new: true }
+        );
+        res.json({ appointment });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Update failed' });
+    }
 });
 
-// ✅ Stock (from client DB)
+// ✅ Stock
 router.get('/stock', requireAdmin, async (req, res) => {
     if (!ClientStockItem) return res.status(500).json({ error: 'Client DB not connected' });
     const stock = await ClientStockItem.find();
@@ -113,11 +121,20 @@ router.get('/stock', requireAdmin, async (req, res) => {
 router.put('/stock/:id', requireAdmin, async (req, res) => {
     if (!ClientStockItem) return res.status(500).json({ error: 'Client DB not connected' });
     const { quantity, total } = req.body;
-    const item = await ClientStockItem.findByIdAndUpdate(req.params.id, { quantity, total }, { new: true });
-    res.json({ item });
+    try {
+        const item = await ClientStockItem.findByIdAndUpdate(
+            req.params.id,
+            { quantity, total },
+            { new: true }
+        );
+        res.json({ item });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Stock update failed' });
+    }
 });
 
-// ✅ Documents (from client DB)
+// ✅ Documents
 router.get('/documents', requireAdmin, async (req, res) => {
     if (!ClientDocument) return res.status(500).json({ error: 'Client DB not connected' });
     const docs = await ClientDocument.find().populate('userId', 'fullName email');
@@ -133,7 +150,7 @@ router.get('/documents', requireAdmin, async (req, res) => {
     });
 });
 
-// ✅ Summary (appointments + low stock from client DB, clients from admin DB)
+// ✅ Summary
 router.get('/summary', requireAdmin, async (req, res) => {
     if (!ClientAppointment || !ClientStockItem) {
         return res.status(500).json({ error: 'Client DB not connected' });
@@ -144,12 +161,11 @@ router.get('/summary', requireAdmin, async (req, res) => {
     const lowStock = await ClientStockItem.countDocuments({ quantity: { $lt: 10 } });
     const totalClients = await User.countDocuments({ role: 'client' });
 
-    // Calculate appointments for the current week (Mon-Sun)
     const now = new Date();
     const startOfWeek = new Date(now);
-    startOfWeek.setHours(0,0,0,0);
-    const day = startOfWeek.getDay(); // 0=Sun,1=Mon,...
-    const diff = (day === 0 ? -6 : 1 - day); // Monday
+    startOfWeek.setHours(0, 0, 0, 0);
+    const day = startOfWeek.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
     startOfWeek.setDate(startOfWeek.getDate() + diff);
 
     const weeklyAppointments = [
@@ -167,9 +183,8 @@ router.get('/summary', requireAdmin, async (req, res) => {
         if (!app.date) return;
         const appDate = new Date(app.date);
         if (isNaN(appDate)) return;
-        const appDayIndex = (appDate.getDay() + 6) % 7; // Mon=0, Sun=6
-        const startOfWeekCopy = new Date(startOfWeek);
-        const endOfWeek = new Date(startOfWeekCopy);
+        const appDayIndex = (appDate.getDay() + 6) % 7;
+        const endOfWeek = new Date(startOfWeek);
         endOfWeek.setDate(endOfWeek.getDate() + 7);
         if (appDate >= startOfWeek && appDate < endOfWeek) {
             weeklyAppointments[appDayIndex].value += 1;
