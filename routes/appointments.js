@@ -26,17 +26,19 @@ router.post('/', async (req, res) => {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const appointment = await Appointment.create({
-        userId: user._id,
-        fullName,
-        email,
-        phone,
-        notes,
-        date,
-        time,
-        type: type || 'Eye Exam'
-    });
-
+   const appointment = await Appointment.create({
+    userId: user._id,
+    fullName,
+    email,
+    phone,
+    notes,
+    date,
+    time,
+    type: type || 'Eye Exam',
+    clinic: clinic,
+    clinicAddress: clinicAddress,
+    clinicId: clinicId || null
+});
     res.status(201).json({ appointment });
 });
 
