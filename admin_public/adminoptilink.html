@@ -169,12 +169,180 @@
         }
 
         @media (max-width: 768px) {
-            .sidebar { display: none; }
-            .bottom-nav { display: flex; }
-            #main { padding: 16px; padding-bottom: 90px; }
-            .topbar { padding: 12px 16px; }
-        }
+    /* Full mobile layout */
+    #app {
+        flex-direction: column;
+        height: 100vh;
+        width: 100vw;
+    }
 
+    .sidebar {
+        display: none;
+    }
+
+    .main-wrapper {
+        width: 100%;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .topbar {
+        padding: 10px 14px;
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .topbar-title {
+        font-size: 16px;
+    }
+
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
+    }
+
+    #main {
+        padding: 12px;
+        padding-bottom: 90px; /* space for bottom nav */
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Bottom navigation */
+    .bottom-nav {
+        display: flex;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        max-width: none;
+        border-top: 1px solid var(--border);
+        background: rgba(255,255,255,0.98);
+        backdrop-filter: blur(10px);
+        z-index: 30;
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .nav-btn {
+        flex: 1;
+        padding: 8px 2px 6px;
+        font-size: 10px;
+    }
+
+    .nav-icon {
+        width: 20px;
+        height: 20px;
+        margin-bottom: 2px;
+    }
+
+    /* Cards and dashboard grid */
+    .card {
+        padding: 14px;
+        border-radius: 12px;
+    }
+
+    .grid-3 {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .grid-3 .card {
+        padding: 12px;
+    }
+
+    .grid-3 h3 {
+        font-size: 20px;
+    }
+
+    /* Chart */
+    .chart-wrap {
+        gap: 6px;
+        height: 130px;
+        padding: 8px 2px 0;
+    }
+
+    .chart-bar {
+        max-width: 26px;
+        border-radius: 4px 4px 2px 2px;
+    }
+
+    .chart-bar-label {
+        font-size: 9px;
+        margin-top: 4px;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    /* Badges */
+    .badge {
+        font-size: 11px;
+        padding: 3px 7px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+        padding: 10px;
+        align-items: flex-end;
+    }
+
+    .modal-box {
+        max-width: 100%;
+        width: 100%;
+        border-radius: 16px 16px 0 0;
+        max-height: 90vh;
+        padding: 16px;
+    }
+
+    .modal-header h3 {
+        font-size: 16px;
+    }
+
+    .modal-field {
+        font-size: 13px;
+        padding: 9px 10px;
+    }
+
+    /* Settings rows */
+    .settings-row {
+        padding: 12px 0;
+    }
+
+    .settings-row-text p:first-child {
+        font-size: 13px;
+    }
+
+    .settings-row-text p:last-child {
+        font-size: 11.5px;
+    }
+
+    /* Prevent horizontal overflow */
+    * {
+        max-width: 100%;
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    /* Extra spacing for inventory cards */
+    .card[style*="display: flex; justify-content: space-between; align-items: center;"] {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .card[style*="display: flex; justify-content: space-between; align-items: center;"] > button {
+        align-self: flex-end;
+    }
+}
         .card {
             background-color: var(--surface);
             border-radius: 14px;
