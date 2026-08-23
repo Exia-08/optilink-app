@@ -633,6 +633,19 @@
             emailNotifs: true,
             smsNotifs: false,
             autoConfirm: true
+        };   // ← add AFTER this semicolon
+
+        const clinicSettings = {
+            operatingHours: {
+            weekdays: { open: '09:00', close: '18:00' },
+            saturday: { open: '09:00', close: '15:00' },
+            sunday: { open: 'Closed', close: 'Closed' }
+        },
+            staffAccounts: [
+            { id: 'staff1', name: 'Staff Admin', role: 'System Administrator', email: 'admin@optilink.com' },
+            { id: 'staff2', name: 'Dr. Elena Cruz', role: 'Optometrist', email: 'elena@optilink.com' },
+            { id: 'staff3', name: 'Mark Villar', role: 'Front Desk', email: 'mark@optilink.com' }
+        ]
         };
 
         function showToast(msg) {
@@ -1127,15 +1140,163 @@
         }
 
         function toggleSetting(key) {
-            settingsPrefs[key] = !settingsPrefs[key];
-            renderPage();
-            showToast('Preference updated');
-        }
+    settingsPrefs[key] = !settingsPrefs[key];
+    renderPage();
+    showToast('Preference updated');
+
+    // If the notification modal is open, refresh it so the toggles reflect the new state
+    if (document.getElementById('modalOverlay').classList.contains('show')) {
+        openSettingsPanel('notifications');
+    }
+}
 
         function openSettingsPanel(panel) {
-            // Simple placeholder, can be extended as before
-            showToast('Settings panel: ' + panel);
-        }
+    if (panel === 'hours') {
+        const oh = clinicSettings.operatingHours;
+        openModal(`
+            <div class="modal-header">
+                <h3 style="font-size: 17px;">Manage Operating Hours</h3>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-row">
+                <div class="label">Weekdays</div>
+                <div style="display:flex; gap:6px; margin-top:6px;">
+                    <input type="time" class="modal-field" id="weekdayOpen" value="${oh.weekdays.open}">
+                    <span style="align-self:center;">to</span>
+                    <input type="time" class="modal-field" id="weekdayClose" value="${oh.weekdays.close}">
+                </div>
+            </div>
+            <div class="modal-row">
+                <div class="label">Saturday</div>
+                <div style="display:flex; gap:6px; margin-top:6px;">
+                    <input type="time" class="modal-field" id="saturdayOpen" value="${oh.saturday.open}">
+                    <span style="align-self:center;">to</span>
+                    <input type="time" class="modal-field" id="saturdayClose" value="${oh.saturday.close}">
+                </div>
+            </div>
+            <div class="modal-row">
+                <div class="label">Sunday</div>
+                <select class="modal-field" id="sundayStatus" onchange="toggleSundayHours()">
+                    <option value="Closed" ${oh.sunday.open === 'Closed' ? 'selected' : ''}>Closed</option>
+                    <option value="Open" ${oh.sunday.open !== 'Closed' ? 'selected' : ''}>Open</option>
+                </select>
+                <div id="sundayHours" style="display:${oh.sunday.open === 'Closed' ? 'none' : 'flex'}; gap:6px; margin-top:6px;">
+                    <input type="time" class="modal-field" id="sundayOpen" value="${oh.sunday.open}">
+                    <span style="align-self:center;">to</span>
+                    <input type="time" class="modal-field" id="sundayClose" value="${oh.sunday.close}">
+                </div>
+            </div>
+            <button class="btn btn-primary" style="margin-top:16px;" onclick="saveOperatingHours()">Save Hours</button>
+        `);
+    } else if (panel === 'staff') {
+        const staffHtml = clinicSettings.staffAccounts.map((staff, index) => `
+            <div class="settings-row">
+                <div class="settings-row-text">
+                    <p>${staff.name}</p>
+                    <p>${staff.role} · ${staff.email}</p>
+                </div>
+                <button class="btn btn-outline" style="padding:6px 8px;" onclick="removeStaffAccount(${index})">Remove</button>
+            </div>
+        `).join('');
+        openModal(`
+            <div class="modal-header">
+                <h3 style="font-size: 17px;">Staff Accounts</h3>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            ${staffHtml || '<p style="color:var(--muted);">No staff accounts.</p>'}
+            <div style="border-top:1px solid var(--border); margin-top:10px; padding-top:10px;">
+                <p style="font-weight:700; margin-bottom:8px;">Add Staff Member</p>
+                <input type="text" class="modal-field" id="newStaffName" placeholder="Full Name">
+                <input type="text" class="modal-field" id="newStaffRole" placeholder="Role">
+                <input type="email" class="modal-field" id="newStaffEmail" placeholder="Email">
+                <button class="btn btn-primary" style="margin-top:10px;" onclick="addStaffAccount()">Add Staff</button>
+            </div>
+        `);
+    } else if (panel === 'notifications') {
+        openModal(`
+            <div class="modal-header">
+                <h3 style="font-size: 17px;">Notification Preferences</h3>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div class="settings-row">
+                <div class="settings-row-text">
+                    <p>Email Notifications</p>
+                    <p>Get appointment updates via email</p>
+                </div>
+                <button class="toggle-switch ${settingsPrefs.emailNotifs ? 'on' : ''}" onclick="toggleSetting('emailNotifs')"><span class="knob"></span></button>
+            </div>
+            <div class="settings-row">
+                <div class="settings-row-text">
+                    <p>SMS Notifications</p>
+                    <p>Get text alerts for new bookings</p>
+                </div>
+                <button class="toggle-switch ${settingsPrefs.smsNotifs ? 'on' : ''}" onclick="toggleSetting('smsNotifs')"><span class="knob"></span></button>
+            </div>
+            <div class="settings-row">
+                <div class="settings-row-text">
+                    <p>Auto-confirm Bookings</p>
+                    <p>Automatically approve routine appointments</p>
+                </div>
+                <button class="toggle-switch ${settingsPrefs.autoConfirm ? 'on' : ''}" onclick="toggleSetting('autoConfirm')"><span class="knob"></span></button>
+            </div>
+            <button class="btn btn-outline" style="margin-top:10px;" onclick="closeModal()">Close</button>
+        `);
+    }
+}
+        function toggleSundayHours() {
+    const status = document.getElementById('sundayStatus').value;
+    const div = document.getElementById('sundayHours');
+    if (status === 'Open') {
+        div.style.display = 'flex';
+    } else {
+        div.style.display = 'none';
+    }
+}
+
+function saveOperatingHours() {
+    const getVal = id => document.getElementById(id).value;
+    const sundayOpen = document.getElementById('sundayOpen') ? document.getElementById('sundayOpen').value : 'Closed';
+
+    clinicSettings.operatingHours = {
+        weekdays: { open: getVal('weekdayOpen'), close: getVal('weekdayClose') },
+        saturday: { open: getVal('saturdayOpen'), close: getVal('saturdayClose') },
+        sunday: document.getElementById('sundayStatus').value === 'Closed'
+            ? { open: 'Closed', close: 'Closed' }
+            : { open: sundayOpen, close: getVal('sundayClose') }
+    };
+
+    closeModal();
+    showToast('Operating hours saved');
+}
+
+function addStaffAccount() {
+    const name = document.getElementById('newStaffName').value.trim();
+    const role = document.getElementById('newStaffRole').value.trim();
+    const email = document.getElementById('newStaffEmail').value.trim();
+
+    if (!name || !role || !email) {
+        showToast('Please fill all staff fields');
+        return;
+    }
+
+    clinicSettings.staffAccounts.push({
+        id: 'staff_' + Date.now(),
+        name,
+        role,
+        email
+    });
+
+    closeModal();
+    showToast('Staff member added');
+    openSettingsPanel('staff'); // refresh modal
+}
+
+function removeStaffAccount(index) {
+    clinicSettings.staffAccounts.splice(index, 1);
+    closeModal();
+    showToast('Staff member removed');
+    openSettingsPanel('staff'); // refresh modal
+}
 
         function viewRecord(id) {
             const rec = records.find(r => String(r.id) === String(id));
