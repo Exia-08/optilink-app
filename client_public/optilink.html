@@ -45,7 +45,7 @@
 
         h1, h2, h3 { margin: 0; letter-spacing: -0.01em; }
 
-        button, input, textarea {
+        button, input, textarea, select {
             font-family: inherit;
         }
 
@@ -673,11 +673,11 @@
         };
 
         const clinics = [
-            { id: 'clinic1', name: 'Clinic 1', address: '123 Vision St, Quezon City' },
-            { id: 'clinic2', name: 'Clinic 2', address: 'Level 2, SM North EDSA, Quezon City' },
-            { id: 'clinic3', name: 'Clinic 3', address: 'Suite 100, Medical Plaza, Makati' },
-            { id: 'clinic4', name: 'Clinic 4', address: '3rd Floor, Ayala Center, Makati' },
-            { id: 'clinic5', name: 'Clinic 5', address: 'High Street South, Bonifacio Global City' },
+            { id: 'clinic1', name: 'OptiLink Main Branch', address: '123 Vision St, Quezon City' },
+            { id: 'clinic2', name: 'OptiLink SM North EDSA', address: 'Level 2, SM North EDSA, Quezon City' },
+            { id: 'clinic3', name: 'OptiLink Medical Plaza', address: 'Suite 100, Medical Plaza, Makati' },
+            { id: 'clinic4', name: 'OptiLink Ayala Center', address: '3rd Floor, Ayala Center, Makati' },
+            { id: 'clinic5', name: 'OptiLink BGC', address: 'High Street South, Bonifacio Global City' },
         ];
 
         const state = {
@@ -688,6 +688,7 @@
             selectedDate: null,
             selectedTime: null,
             selectedClinic: null,
+            selectedStockClinic: null,
             stockFilter: 'all',
             booking: { fullName: '', email: '', phone: '', notes: '' },
             settings: {
@@ -727,7 +728,10 @@
 
         async function loadStock() {
             try {
-                const resp = await fetch('/api/stock');
+                const url = state.selectedStockClinic
+                    ? `/api/stock?clinicId=${encodeURIComponent(state.selectedStockClinic)}`
+                    : '/api/stock';
+                const resp = await fetch(url);
                 const data = await resp.json();
                 stock = data.stock || stock;
             } catch (err) {
@@ -1045,9 +1049,7 @@
             if (window.confirm('Are you sure you want to log out?')) {
                 try {
                     await fetch('/api/auth/logout', { method: 'POST' });
-                } catch (err) {
-                    // ignore, redirect anyway
-                }
+                } catch (err) {}
                 window.location.href = 'index.html';
             }
         }
@@ -1197,7 +1199,15 @@
 
             return `
                 <div class="page">
-                    <div style="display: flex; gap: 8px; margin-bottom: 18px;">
+                    <label class="field-label" for="stockClinicSelect">Choose Clinic</label>
+                    <select id="stockClinicSelect" class="input-field" onchange="selectStockClinic(this.value)">
+                        <option value="">All Clinics</option>
+                        ${clinics.map(c => `
+                            <option value="${c.id}" ${state.selectedStockClinic === c.id ? 'selected' : ''}>${c.name}</option>
+                        `).join('')}
+                    </select>
+
+                    <div style="display: flex; gap: 8px; margin: 18px 0;">
                         <button class="chip ${state.stockFilter === 'all' ? 'active' : ''}" onclick="filterStock('all')">All</button>
                         <button class="chip ${state.stockFilter === 'frames' ? 'active' : ''}" onclick="filterStock('frames')">Frames</button>
                         <button class="chip ${state.stockFilter === 'lenses' ? 'active' : ''}" onclick="filterStock('lenses')">Lenses</button>
@@ -1400,6 +1410,12 @@
             renderPage();
         }
 
+        function selectStockClinic(clinicId) {
+            state.selectedStockClinic = clinicId;
+            loadStock();
+            renderPage();
+        }
+
         function saveDetailsToState() {
             const fullName = document.getElementById('fullName');
             const email = document.getElementById('email');
@@ -1446,7 +1462,8 @@
                         time: state.selectedTime,
                         type: 'Eye Exam',
                         clinic: clinic ? clinic.name : '',
-                        clinicAddress: clinic ? clinic.address : ''
+                        clinicAddress: clinic ? clinic.address : '',
+                        clinicId: state.selectedClinic
                     })
                 });
                 const data = await resp.json();
