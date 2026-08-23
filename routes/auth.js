@@ -5,11 +5,12 @@ const User = require('../models/User');
 
 const router = express.Router();
 
+// Generate JWT token
 function generateToken(user) {
     return jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 }
 
-// Helper to get user from token
+// Helper to get user from cookie token
 async function getUserFromToken(req) {
     const token = req.cookies.token;
     if (!token) return null;
@@ -21,40 +22,61 @@ async function getUserFromToken(req) {
     }
 }
 
-// Client signup
+// ---------- CLIENT SIGNUP ----------
 router.post('/signup', async (req, res) => {
     try {
         const { fullName, email, phone, password } = req.body;
+
         if (!fullName || !email || !password) {
-            return res.status(400).json({ error: 'Name, email, and password required' });
+            return res.status(400).json({ error: 'Name, email, and password are required' });
         }
+
         const existing = await User.findOne({ email });
         if (existing) return res.status(400).json({ error: 'Email already registered' });
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = await User.create({ fullName, email, phone, password: hashedPassword, role: 'client' });
+        const user = await User.create({
+            fullName,
+            email,
+            phone,
+            password: hashedPassword,
+            role: 'client'
+        });
 
         const token = generateToken(user);
         res.cookie('token', token, { httpOnly: true, sameSite: 'lax' });
-        res.status(201).json({ user: { id: user._id, fullName, email, phone, role: 'client', settings: user.settings } });
+
+        res.status(201).json({
+            user: {
+                id: user._id,
+                fullName: user.fullName,
+                email: user.email,
+                phone: user.phone,
+                role: user.role,
+                settings: user.settings
+            }
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error' });
     }
 });
 
-// Login (client or admin)
+// ---------- LOGIN (CLIENT OR ADMIN) ----------
 router.post('/login', async (req, res) => {
     try {
         const { username, email, password, role } = req.body;
         const identifier = username || email;
 
         if (!identifier || !password) {
-            return res.status(400).json({ error: 'Username and password required' });
+            return res.status(400).json({ error: 'Username/email and password are required' });
         }
 
         const user = await User.findOne({
-            $or: [{ username: identifier }, { email: identifier }]
+            $or: [
+                { username: identifier },
+                { email: identifier }
+            ]
         });
 
         if (!user) return res.status(401).json({ error: 'Invalid credentials' });
@@ -62,12 +84,14 @@ router.post('/login', async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
 
+        // If login requests a specific role, verify the user has that role
         if (role && user.role !== role) {
             return res.status(403).json({ error: 'Unauthorized role' });
         }
 
         const token = generateToken(user);
         res.cookie('token', token, { httpOnly: true, sameSite: 'lax' });
+
         res.json({
             user: {
                 id: user._id,
@@ -88,25 +112,23 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// Admin registration is intentionally disabled for security.
-// To create an admin account, use a controlled seed script or insert directly into MongoDB Atlas.
+// ---------- ADMIN REGISTRATION (CLINIC-SPECIFIC) ----------
 router.post('/register', async (req, res) => {
     try {
-        const { firstName, lastName, email, role, clinicId, password } = req.body;
-        if (!firstName || !lastName || !email || !role || !clinicId || !password) {
+        const { firstName, lastName, username, role, clinicId, password } = req.body;
+
+        if (!firstName || !lastName || !username || !role || !clinicId || !password) {
             return res.status(400).json({ error: 'All fields are required' });
         }
 
-        const existing = await User.findOne({ email });
-        if (existing) return res.status(400).json({ error: 'Email already registered' });
+        const existing = await User.findOne({ username });
+        if (existing) return res.status(400).json({ error: 'Username already exists' });
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const fullName = `${firstName} ${lastName}`;
-        const username = email.split('@')[0].toLowerCase();
 
         const user = await User.create({
             fullName,
-            email,
             username,
             password: hashedPassword,
             role: 'admin',
@@ -114,22 +136,24 @@ router.post('/register', async (req, res) => {
             clinicId
         });
 
-        res.status(201).json({ message: 'Admin account created', username });
+        res.status(201).json({ message: 'Admin account created', username: user.username });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error' });
     }
 });
 
-// Get current user
+// ---------- GET CURRENT USER ----------
 router.get('/me', async (req, res) => {
     const user = await getUserFromToken(req);
     if (!user) return res.status(401).json({ user: null });
+
     res.json({
         user: {
             id: user._id,
             fullName: user.fullName,
             email: user.email,
+            username: user.username,
             phone: user.phone,
             role: user.role,
             settings: user.settings,
@@ -140,50 +164,69 @@ router.get('/me', async (req, res) => {
     });
 });
 
-// Update settings
+// ---------- UPDATE SETTINGS ----------
 router.put('/settings', async (req, res) => {
     const user = await getUserFromToken(req);
     if (!user) return res.status(401).json({ error: 'Not logged in' });
+
     user.settings = req.body;
     await user.save();
     res.json({ settings: user.settings });
 });
 
-// Update profile
+// ---------- UPDATE PROFILE ----------
 router.put('/profile', async (req, res) => {
     const user = await getUserFromToken(req);
     if (!user) return res.status(401).json({ error: 'Not logged in' });
+
     const { fullName, email, phone } = req.body;
-    if (!fullName || !email) return res.status(400).json({ error: 'Name and email required' });
+    if (!fullName || !email) {
+        return res.status(400).json({ error: 'Name and email are required' });
+    }
+
     user.fullName = fullName;
     user.email = email;
     user.phone = phone;
     await user.save();
-    res.json({ user: { id: user._id, fullName, email, phone, role: user.role, settings: user.settings } });
+
+    res.json({
+        user: {
+            id: user._id,
+            fullName: user.fullName,
+            email: user.email,
+            phone: user.phone,
+            role: user.role,
+            settings: user.settings
+        }
+    });
 });
 
-// Update insurance
+// ---------- UPDATE INSURANCE ----------
 router.put('/insurance', async (req, res) => {
     const user = await getUserFromToken(req);
     if (!user) return res.status(401).json({ error: 'Not logged in' });
+
     user.insurance = req.body;
     await user.save();
     res.json({ insurance: user.insurance });
 });
 
-// Change password
+// ---------- CHANGE PASSWORD ----------
 router.post('/change-password', async (req, res) => {
     const user = await getUserFromToken(req);
     if (!user) return res.status(401).json({ error: 'Not logged in' });
+
     const { currentPassword, newPassword } = req.body;
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) return res.status(400).json({ error: 'Current password is incorrect' });
+
     user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
+
     res.json({ message: 'Password updated' });
 });
 
-// Logout
+// ---------- LOGOUT ----------
 router.post('/logout', (req, res) => {
     res.clearCookie('token');
     res.json({ message: 'Logged out' });
