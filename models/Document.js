@@ -7,6 +7,7 @@ const documentSchema = new mongoose.Schema({
     summary: String,
     fileData: Buffer,
     fileMimetype: String,
+    clinicId: String,
     date: { type: String, default: () => new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) },
     createdAt: { type: Date, default: Date.now }
 });
