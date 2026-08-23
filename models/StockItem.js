@@ -8,7 +8,8 @@ const stockItemSchema = new mongoose.Schema({
     total: Number,
     color: String,
     desc: String,
-    tag: String
+    tag: String,
+    clinicId: { type: String, index: true }
 });
 
 module.exports = mongoose.model('StockItem', stockItemSchema);
