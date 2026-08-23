@@ -979,30 +979,7 @@
                     </button>
                 </div>
 
-                <div class="card">
-                    <p style="font-weight: 700; margin-bottom: 4px;">Quick Preferences</p>
-                    <div class="settings-row">
-                        <div class="settings-row-text">
-                            <p>Email Notifications</p>
-                            <p>Appointment updates via email</p>
-                        </div>
-                        <button class="toggle-switch ${settingsPrefs.emailNotifs ? 'on' : ''}" onclick="toggleSetting('emailNotifs')"><span class="knob"></span></button>
-                    </div>
-                    <div class="settings-row">
-                        <div class="settings-row-text">
-                            <p>SMS Notifications</p>
-                            <p>Text alerts for new bookings</p>
-                        </div>
-                        <button class="toggle-switch ${settingsPrefs.smsNotifs ? 'on' : ''}" onclick="toggleSetting('smsNotifs')"><span class="knob"></span></button>
-                    </div>
-                    <div class="settings-row">
-                        <div class="settings-row-text">
-                            <p>Auto-confirm Bookings</p>
-                            <p>Automatically approve routine appointments</p>
-                        </div>
-                        <button class="toggle-switch ${settingsPrefs.autoConfirm ? 'on' : ''}" onclick="toggleSetting('autoConfirm')"><span class="knob"></span></button>
-                    </div>
-                </div>
+                
                 
                 <button class="btn btn-danger" style="width: 100%; padding: 14px; font-size: 15px;" onclick="logout()">Secure Log Out</button>
             `;
