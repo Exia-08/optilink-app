@@ -571,20 +571,37 @@
         }
 
         async function loadCurrentAdmin() {
-            try {
-                const data = await safeFetchJson('/api/auth/me');
-                if (!data.user || data.user.role !== 'admin') {
-                    window.location.href = 'admin-login.html';
-                    return null;
-                }
-                currentAdmin = data.user;
-                return currentAdmin;
-            } catch (err) {
-                showDemoDataBanner();
-                currentAdmin = { name: 'Staff Admin', role: 'admin' };
-                return currentAdmin;
-            }
+    try {
+        const resp = await fetch('/api/auth/me', {
+            credentials: 'include'
+        });
+
+        if (resp.status === 401 || resp.status === 403) {
+            window.location.href = 'admin-login.html';
+            return null;
         }
+
+        const contentType = resp.headers.get('content-type') || '';
+        if (!resp.ok || !contentType.includes('application/json')) {
+            throw new Error('Admin API unavailable');
+        }
+
+        const data = await resp.json();
+
+        if (!data.user || data.user.role !== 'admin') {
+            window.location.href = 'admin-login.html';
+            return null;
+        }
+
+        currentAdmin = data.user;
+        return currentAdmin;
+    } catch (err) {
+        console.error('Admin session check failed:', err);
+        showDemoDataBanner();
+        currentAdmin = { name: 'Staff Admin', role: 'admin' };
+        return currentAdmin;
+    }
+}
 
         async function loadAppointments() {
             try {
