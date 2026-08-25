@@ -701,6 +701,7 @@
         let currentUser = null;
         let documents = [];
         let cameraStream = null;
+        let cameraFacingMode = 'user'; // 'user' = front, 'environment' = back
 
         async function loadCurrentUser() {
             const resp = await fetch('/api/auth/me');
@@ -802,6 +803,8 @@
             else if (state.currentPage === 'stock') main.innerHTML = renderStock();
             else if (state.currentPage === 'booking') main.innerHTML = renderBooking();
             else if (state.currentPage === 'settings') main.innerHTML = renderSettings();
+
+            attachCameraIfActive(); 
         }
 
         function renderSettings() {
@@ -1139,24 +1142,38 @@
         function renderTryOn() {
             return `
                 <div class="page">
-                   <div class="card" style="text-align: center; padding: 20px; background: linear-gradient(160deg, var(--surface-alt), var(--surface));">
+                 <div class="card" style="text-align: center; padding: 16px; background: linear-gradient(160deg, var(--surface-alt), var(--surface));">
     <p style="color: var(--muted); font-size: 13px; margin-bottom: 12px;">
         ${state.cameraActive ? 'Camera is active. Position your face in the frame.' : 'Tap to start your camera.'}
     </p>
 
-    <video
-        id="tryonVideo"
-        autoplay
-        playsinline
-        muted
-        style="width:100%; max-width:100%; border-radius: 12px; background:#000; display:${state.cameraActive ? 'block' : 'none'}; aspect-ratio: 4/3; object-fit: cover;"
-    ></video>
+    <div style="position: relative; width: 100%; max-width: 100%; border-radius: 12px; overflow: hidden; ${state.cameraActive ? '' : 'display: none;'}">
+        <video
+            id="tryonVideo"
+            autoplay
+            playsinline
+            muted
+            style="width:100%; aspect-ratio: 4/3; object-fit: cover; transform: scaleX(-1); background: #000;"
+        ></video>
+
+        <!-- Frame overlay -->
+        ${(() => {
+            const selected = frames.find(f => f.style === state.selectedFrame);
+            return selected ? `<img src="${selected.img}" alt="${selected.name}" style="position: absolute; top: 20%; left: 50%; transform: translateX(-50%); width: 70%; pointer-events: none; opacity: 0.85;" />` : '';
+        })()}
+    </div>
 
     ${!state.cameraActive ? `<div style="font-size: 48px; margin: 20px 0;">🎥</div>` : ''}
 
-    <button class="btn btn-primary" onclick="toggleCamera()">
-        ${state.cameraActive ? 'Stop Camera' : 'Start Camera'}
-    </button>
+    <div style="display: flex; gap: 10px; margin-top: 14px;">
+        <button class="btn btn-primary" style="flex:1;" onclick="toggleCamera()">
+            ${state.cameraActive ? 'Stop Camera' : 'Start Camera'}
+        </button>
+        ${state.cameraActive ? `
+        <button class="btn btn-secondary" style="flex:1;" onclick="switchCamera()">
+            🔄 Switch Camera
+        </button>` : ''}
+    </div>
 </div>
 
                     <h3 style="font-weight: 700; font-size: 14px; margin-top: 20px; margin-bottom: 10px; color: var(--ink-soft);">SELECT FRAME STYLE</h3>
@@ -1409,7 +1426,7 @@ async function startCamera() {
     try {
         cameraStream = await navigator.mediaDevices.getUserMedia({
             video: {
-                facingMode: 'user',
+                facingMode: cameraFacingMode,
                 width: { ideal: 640 },
                 height: { ideal: 480 }
             },
@@ -1439,6 +1456,28 @@ function stopCamera() {
         cameraStream = null;
     }
     state.cameraActive = false;
+}
+        function attachCameraIfActive() {
+    if (state.cameraActive && cameraStream) {
+        const video = document.getElementById('tryonVideo');
+        if (video) {
+            video.srcObject = cameraStream;
+            video.style.display = 'block';
+            video.play().catch(() => {});
+        }
+    }
+}
+        async function switchCamera() {
+    // Toggle between front and back camera
+    cameraFacingMode = cameraFacingMode === 'user' ? 'environment' : 'user';
+
+    // Stop current stream and restart with new facing mode
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+    }
+
+    await startCamera();
 }
 
         function selectFrame(style) {
