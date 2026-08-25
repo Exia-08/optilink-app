@@ -700,6 +700,7 @@
 
         let currentUser = null;
         let documents = [];
+        let cameraStream = null;
 
         async function loadCurrentUser() {
             const resp = await fetch('/api/auth/me');
@@ -777,6 +778,10 @@
         }
 
         async function showPage(page) {
+            // Stop camera if leaving the Try-On page
+    if (page !== 'tryon' && state.cameraActive) {
+        stopCamera();
+    }
             state.currentPage = page;
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
             const navBtn = document.querySelector(`[data-page="${page}"]`);
@@ -787,6 +792,7 @@
             if (page === 'stock') await loadStock();
             renderPage();
         }
+        
 
         function renderPage() {
             const main = document.getElementById('main');
@@ -1133,15 +1139,25 @@
         function renderTryOn() {
             return `
                 <div class="page">
-                    <div class="card" style="text-align: center; padding: 40px 20px; background: linear-gradient(160deg, var(--surface-alt), var(--surface));">
-                        <div style="font-size: 56px; margin-bottom: 10px;">🎥</div>
-                        <p style="color: var(--muted); font-size: 13px; margin-bottom: 16px;">
-                            ${state.cameraActive ? 'Camera active — face detected' : 'Tap to start your camera'}
-                        </p>
-                        <button class="btn btn-primary" onclick="toggleCamera()">
-                            ${state.cameraActive ? 'Stop Camera' : 'Start Camera'}
-                        </button>
-                    </div>
+                   <div class="card" style="text-align: center; padding: 20px; background: linear-gradient(160deg, var(--surface-alt), var(--surface));">
+    <p style="color: var(--muted); font-size: 13px; margin-bottom: 12px;">
+        ${state.cameraActive ? 'Camera is active. Position your face in the frame.' : 'Tap to start your camera.'}
+    </p>
+
+    <video
+        id="tryonVideo"
+        autoplay
+        playsinline
+        muted
+        style="width:100%; max-width:100%; border-radius: 12px; background:#000; display:${state.cameraActive ? 'block' : 'none'}; aspect-ratio: 4/3; object-fit: cover;"
+    ></video>
+
+    ${!state.cameraActive ? `<div style="font-size: 48px; margin: 20px 0;">🎥</div>` : ''}
+
+    <button class="btn btn-primary" onclick="toggleCamera()">
+        ${state.cameraActive ? 'Stop Camera' : 'Start Camera'}
+    </button>
+</div>
 
                     <h3 style="font-weight: 700; font-size: 14px; margin-top: 20px; margin-bottom: 10px; color: var(--ink-soft);">SELECT FRAME STYLE</h3>
                     ${frames.map(frame => `
@@ -1381,9 +1397,49 @@
         }
 
         function toggleCamera() {
-            state.cameraActive = !state.cameraActive;
-            renderPage();
+    if (state.cameraActive) {
+        stopCamera();
+        renderPage();
+    } else {
+        startCamera();
+    }
+}
+
+async function startCamera() {
+    try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: 'user',
+                width: { ideal: 640 },
+                height: { ideal: 480 }
+            },
+            audio: false
+        });
+
+        state.cameraActive = true;
+        renderPage();
+
+        const video = document.getElementById('tryonVideo');
+        if (video) {
+            video.srcObject = cameraStream;
+            video.style.display = 'block';
+            await video.play().catch(() => {});
         }
+    } catch (err) {
+        console.error('Camera error:', err);
+        state.cameraActive = false;
+        renderPage();
+        showToast('Camera permission denied or camera not available');
+    }
+}
+
+function stopCamera() {
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+    }
+    state.cameraActive = false;
+}
 
         function selectFrame(style) {
             state.selectedFrame = style;
