@@ -1540,31 +1540,99 @@
             canvasCtx.restore();
         }
 
-        function drawGlassesOnCanvas(ctx, canvas, landmarks) {
-            const selectedFrame = frames.find(f => f.style === state.selectedFrame);
-            if (!selectedFrame) return;
+function drawGlassesOnCanvas(ctx, canvas, landmarks) {
+    const style = state.selectedFrame || 'classic';
 
-            const leftEye = landmarks[33];
-            const rightEye = landmarks[263];
-            const eyeDistance = Math.hypot(rightEye.x - leftEye.x, rightEye.y - leftEye.y) * canvas.width;
-            const frameWidth = eyeDistance * 2.2;
-            const frameHeight = frameWidth * 0.6;
+    // Key facial landmarks
+    const leftEyeOuter = landmarks[33];   // left eye outer corner
+    const leftEyeInner = landmarks[133];  // left eye inner corner
+    const rightEyeInner = landmarks[362]; // right eye inner corner
+    const rightEyeOuter = landmarks[263]; // right eye outer corner
+    const noseBridge = landmarks[168];    // nose bridge top
 
-            const centerX = ((leftEye.x + rightEye.x) / 2) * canvas.width;
-            const centerY = ((leftEye.y + rightEye.y) / 2) * canvas.height * 0.85;
-            const angle = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
+    // Eye center positions
+    const leftEyeCenter = {
+        x: ((leftEyeOuter.x + leftEyeInner.x) / 2) * canvas.width,
+        y: ((leftEyeOuter.y + leftEyeInner.y) / 2) * canvas.height
+    };
+    const rightEyeCenter = {
+        x: ((rightEyeOuter.x + rightEyeInner.x) / 2) * canvas.width,
+        y: ((rightEyeOuter.y + rightEyeInner.y) / 2) * canvas.height
+    };
 
-            ctx.save();
-            ctx.translate(centerX, centerY);
-            ctx.rotate(angle);
+    // Distance between eye centers
+    const eyeDistance = Math.hypot(rightEyeCenter.x - leftEyeCenter.x, rightEyeCenter.y - leftEyeCenter.y);
+    const glassesWidth = eyeDistance * 2.2;
+    const lensWidth = glassesWidth * 0.42;
+    const lensHeight = glassesWidth * 0.34;
+    const bridgeWidth = glassesWidth * 0.16;
 
-            const img = new Image();
-            img.src = selectedFrame.img;
-            img.onload = () => {
-                ctx.drawImage(img, -frameWidth / 2, -frameHeight / 2, frameWidth, frameHeight);
-            };
-            ctx.restore();
-        }
+    // Angle of face tilt
+    const angle = Math.atan2(rightEyeCenter.y - leftEyeCenter.y, rightEyeCenter.x - leftEyeCenter.x);
+
+    ctx.save();
+    ctx.translate((leftEyeCenter.x + rightEyeCenter.x) / 2, (leftEyeCenter.y + rightEyeCenter.y) / 2);
+    ctx.rotate(angle);
+
+    // Offset glasses slightly down from eye line
+    const yOffset = -lensHeight * 0.1; // adjust vertical position
+
+    // Frame color based on selected style
+    let frameColor = '#1B1730';
+    if (style === 'round') frameColor = '#d4af37';
+    else if (style === 'cateye') frameColor = '#f0a8c0';
+    else if (style === 'wayfarer') frameColor = '#a0522d';
+
+    ctx.lineWidth = Math.max(3, eyeDistance * 0.08);
+    ctx.strokeStyle = frameColor;
+    ctx.fillStyle = 'rgba(255,255,255,0.05)'; // very light lens tint
+
+    // Draw left lens
+    ctx.beginPath();
+    if (style === 'round' || style === 'classic') {
+        ctx.ellipse(-lensWidth * 0.6, yOffset, lensWidth * 0.7, lensHeight * 0.5, 0, 0, Math.PI * 2);
+    } else if (style === 'cateye') {
+        ctx.moveTo(-lensWidth * 1.2, yOffset - lensHeight * 0.2);
+        ctx.quadraticCurveTo(-lensWidth * 0.3, yOffset - lensHeight * 0.7, -lensWidth * 0.2, yOffset + lensHeight * 0.4);
+        ctx.quadraticCurveTo(-lensWidth * 0.8, yOffset + lensHeight * 0.6, -lensWidth * 1.3, yOffset + lensHeight * 0.1);
+        ctx.closePath();
+    } else if (style === 'wayfarer') {
+        ctx.rect(-lensWidth * 1.2, yOffset - lensHeight * 0.5, lensWidth * 0.9, lensHeight);
+    }
+    ctx.fill();
+    ctx.stroke();
+
+    // Draw right lens
+    ctx.beginPath();
+    if (style === 'round' || style === 'classic') {
+        ctx.ellipse(lensWidth * 0.6, yOffset, lensWidth * 0.7, lensHeight * 0.5, 0, 0, Math.PI * 2);
+    } else if (style === 'cateye') {
+        ctx.moveTo(lensWidth * 1.2, yOffset - lensHeight * 0.2);
+        ctx.quadraticCurveTo(lensWidth * 0.3, yOffset - lensHeight * 0.7, lensWidth * 0.2, yOffset + lensHeight * 0.4);
+        ctx.quadraticCurveTo(lensWidth * 0.8, yOffset + lensHeight * 0.6, lensWidth * 1.3, yOffset + lensHeight * 0.1);
+        ctx.closePath();
+    } else if (style === 'wayfarer') {
+        ctx.rect(lensWidth * 0.3, yOffset - lensHeight * 0.5, lensWidth * 0.9, lensHeight);
+    }
+    ctx.fill();
+    ctx.stroke();
+
+    // Draw bridge
+    ctx.beginPath();
+    ctx.moveTo(-lensWidth * 0.2, yOffset - lensHeight * 0.2);
+    ctx.quadraticCurveTo(0, yOffset - lensHeight * 0.35, lensWidth * 0.2, yOffset - lensHeight * 0.2);
+    ctx.stroke();
+
+    // Optional temple arms
+    ctx.beginPath();
+    ctx.moveTo(-lensWidth * 1.2, yOffset - lensHeight * 0.1);
+    ctx.lineTo(-glassesWidth / 2, yOffset - lensHeight * 0.4);
+    ctx.moveTo(lensWidth * 1.2, yOffset - lensHeight * 0.1);
+    ctx.lineTo(glassesWidth / 2, yOffset - lensHeight * 0.4);
+    ctx.stroke();
+
+    ctx.restore();
+}
 
         function selectFrame(style) {
             state.selectedFrame = style;
