@@ -654,6 +654,65 @@
             else if (page === 'inventory') { await loadStock(); }
             else if (page === 'records') { await loadRecords(); }
         }
+        function renderHome() {
+    const weekly = summary.weeklyAppointments && summary.weeklyAppointments.length
+        ? summary.weeklyAppointments
+        : [
+            { label: 'Mon', value: 0 }, { label: 'Tue', value: 0 }, { label: 'Wed', value: 0 },
+            { label: 'Thu', value: 0 }, { label: 'Fri', value: 0 }, { label: 'Sat', value: 0 }, { label: 'Sun', value: 0 }
+        ];
+    const max = Math.max(...weekly.map(x => x.value), 1);
+
+    return `
+        <div style="margin-bottom: 24px;">
+            <h2 style="font-size: 22px; font-weight: 700;">Good Morning, Admin 👋</h2>
+            <p style="color: var(--muted); font-size: 14px; margin-top: 4px;">Here is your clinic overview for today.</p>
+        </div>
+
+        <div class="grid-3">
+            <div class="card">
+                <div style="font-size: 24px; margin-bottom: 10px;">📅</div>
+                <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 4px;">${summary.totalAppointments ?? appointments.length}</h3>
+                <p style="color: var(--muted); font-size: 13px;">Upcoming Appointments</p>
+            </div>
+            <div class="card">
+                <div style="font-size: 24px; margin-bottom: 10px;">⚠️</div>
+                <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 4px;">${summary.lowStock ?? 0}</h3>
+                <p style="color: var(--muted); font-size: 13px;">Low Stock Alerts</p>
+            </div>
+            <div class="card">
+                <div style="font-size: 24px; margin-bottom: 10px;">📁</div>
+                <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 4px;">${summary.totalClients ?? 0}</h3>
+                <p style="color: var(--muted); font-size: 13px;">Total Clients</p>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 24px;">
+            <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 4px;">
+                <h3 style="font-weight: 700; font-size: 16px;">Appointments This Week</h3>
+                <span class="badge in">${weekly.reduce((s,d) => s + d.value, 0)} total</span>
+            </div>
+            <div class="chart-wrap">
+                ${weekly.map(d => `
+                    <div class="chart-bar-col">
+                        <div class="chart-bar" style="height: ${Math.max((d.value / max) * 100, 6)}%;" title="${d.label}: ${d.value} appointments"></div>
+                        <div class="chart-bar-label">${d.label}</div>
+                    </div>`).join('')}
+            </div>
+        </div>
+
+        <h3 style="font-weight: 700; font-size: 16px; margin: 24px 0 12px; color: var(--ink);">Today's Schedule</h3>
+        ${appointments.slice(0,2).map(app => `
+            <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <p style="font-weight: 700;">${app.name} - <span style="color: var(--blue);">${app.type}</span></p>
+                    <p style="color: var(--muted); font-size: 12.5px; margin-top: 4px;">${app.time}</p>
+                </div>
+                <button class="btn btn-primary" onclick="viewAppointment('${app.id}')">View</button>
+            </div>
+        `).join('')}
+    `;
+}
 
         function renderPage() {
             const main = document.getElementById('main');
