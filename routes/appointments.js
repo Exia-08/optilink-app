@@ -26,9 +26,13 @@ const appointmentSchema = new mongoose.Schema({
 });
 
 let ClientAppointment = null;
+let ClientStockItem = null;
+let ClientDocument = null;
 
 if (clientConn) {
     ClientAppointment = clientConn.models['Appointment'] || clientConn.model('Appointment', appointmentSchema);
+    ClientStockItem = clientConn.models['StockItem'] || clientConn.model('StockItem', stockItemSchema);
+    ClientDocument = clientConn.models['Document'] || clientConn.model('Document', documentSchema);
 }
 
 // ---------- Auth helper ----------
