@@ -26,8 +26,9 @@ const appointmentSchema = new mongoose.Schema({
 });
 
 let ClientAppointment = null;
+
 if (clientConn) {
-    ClientAppointment = clientConn.model('Appointment', appointmentSchema);
+    ClientAppointment = clientConn.models['Appointment'] || clientConn.model('Appointment', appointmentSchema);
 }
 
 // ---------- Auth helper ----------
