@@ -701,24 +701,29 @@
         }
 
         function renderSettings() {
-            return `
-                <div class="card" style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
-                    <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--gradient); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 22px;">SA</div>
-                    <div>
-                        <p style="font-weight: 700; font-size: 18px;">Staff Admin</p>
-                        <p style="font-size: 13px; color: var(--muted); margin-top: 2px;">Account ID: STAFF-001</p>
-                        <span class="badge in" style="margin-top: 6px; display: inline-block;">System Administrator</span>
-                    </div>
-                </div>
-                <div class="card">
-                    <p style="font-weight: 700; margin-bottom: 12px;">Clinic Configuration</p>
-                    <button class="btn btn-outline" style="width: 100%; text-align: left; margin-bottom: 10px; display: flex; justify-content: space-between;" onclick="openSettingsPanel('hours')">Manage Operating Hours <span>›</span></button>
-                    <button class="btn btn-outline" style="width: 100%; text-align: left; margin-bottom: 10px; display: flex; justify-content: space-between;" onclick="openSettingsPanel('staff')">Staff Accounts <span>›</span></button>
-                    <button class="btn btn-outline" style="width: 100%; text-align: left; display: flex; justify-content: space-between;" onclick="openSettingsPanel('notifications')">Notification Preferences <span>›</span></button>
-                </div>
-                <button class="btn btn-danger" style="width: 100%; padding: 14px; font-size: 15px;" onclick="logout()">Secure Log Out</button>
-            `;
-        }
+    return `
+        <div class="card" style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+            <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--gradient); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 22px;">SA</div>
+            <div>
+                <p style="font-weight: 700; font-size: 18px;">Staff Admin</p>
+                <p style="font-size: 13px; color: var(--muted); margin-top: 2px;">Account ID: STAFF-001</p>
+                <span class="badge in" style="margin-top: 6px; display: inline-block;">System Administrator</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <p style="font-weight: 700; margin-bottom: 12px;">Clinic Configuration</p>
+            <button class="btn btn-outline" style="width: 100%; text-align: left; margin-bottom: 10px; display: flex; justify-content: space-between;" onclick="openSettingsPanel('hours')">
+                Manage Operating Hours <span>›</span>
+            </button>
+            <button class="btn btn-outline" style="width: 100%; text-align: left; display: flex; justify-content: space-between;" onclick="openSettingsPanel('notifications')">
+                Notification Preferences <span>›</span>
+            </button>
+        </div>
+
+        <button class="btn btn-danger" style="width: 100%; padding: 14px; font-size: 15px;" onclick="logout()">Secure Log Out</button>
+    `;
+}
 
         // Additional helper functions (upload, settings, logout) omitted for brevity but should be included from your existing file.
 
