@@ -836,72 +836,69 @@ async function refreshHome() {
             attachCameraIfActive();
         }
 
-        function renderSettings() {
-            const s = state.settings;
-            return `
-                <div class="page">
-                    <div class="card" style="display: flex; align-items: center; gap: 14px;">
-                        <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--gradient); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 19px; flex-shrink: 0;">
-                            ${((currentUser && currentUser.fullName) || 'Guest User').split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase()}
-                        </div>
-                        <div style="min-width: 0;">
-                            <p style="font-weight: 700; font-size: 15px;">${(currentUser && currentUser.fullName) || 'Guest User'}</p>
-                            <p style="font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${(currentUser && currentUser.email) || ''}</p>
-                        </div>
-                    </div>
-
-                    <h3 style="font-weight: 700; font-size: 13px; margin: 20px 0 10px; color: var(--ink-soft); letter-spacing: 0.02em;">ACCOUNT</h3>
-                    <div class="card" style="padding: 4px 16px;">
-                        <div class="settings-row" onclick="openEditProfileModal()">
-                            <span>Edit Profile</span>
-                            <span class="card-chevron">›</span>
-                        </div>
-                        <div class="settings-row" onclick="openChangePasswordModal()">
-                            <span>Change Password</span>
-                            <span class="card-chevron">›</span>
-                        </div>
-                        <div class="settings-row" onclick="openInsuranceModal()">
-                            <span>Insurance &amp; Billing</span>
-                            <span class="card-chevron">›</span>
-                        </div>
-                    </div>
-
-                    <h3 style="font-weight: 700; font-size: 13px; margin: 20px 0 10px; color: var(--ink-soft); letter-spacing: 0.02em;">PREFERENCES</h3>
-                    <div class="card" style="padding: 4px 16px;">
-                        <div class="settings-row">
-                            <span>Push Notifications</span>
-                            <button class="toggle ${s.pushNotifications ? 'on' : ''}" onclick="toggleSetting('pushNotifications')" aria-label="Toggle push notifications"><span class="knob"></span></button>
-                        </div>
-                        <div class="settings-row">
-                            <span>Email Reminders</span>
-                            <button class="toggle ${s.emailReminders ? 'on' : ''}" onclick="toggleSetting('emailReminders')" aria-label="Toggle email reminders"><span class="knob"></span></button>
-                        </div>
-                        <div class="settings-row">
-                            <span>Face ID Login</span>
-                            <button class="toggle ${s.faceIdLogin ? 'on' : ''}" onclick="toggleSetting('faceIdLogin')" aria-label="Toggle Face ID login"><span class="knob"></span></button>
-                        </div>
-                    </div>
-
-                    <h3 style="font-weight: 700; font-size: 13px; margin: 20px 0 10px; color: var(--ink-soft); letter-spacing: 0.02em;">SUPPORT</h3>
-                    <div class="card" style="padding: 4px 16px;">
-                        <div class="settings-row" onclick="showToast('Opening Help Center')">
-                            <span>Help Center</span>
-                            <span class="card-chevron">›</span>
-                        </div>
-                        <div class="settings-row" onclick="showToast('Opening contact support')">
-                            <span>Contact Support</span>
-                            <span class="card-chevron">›</span>
-                        </div>
-                        <div class="settings-row" onclick="showToast('OptiLink v1.0.0')">
-                            <span>About OptiLink</span>
-                            <span class="card-chevron">›</span>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-block" style="margin-top: 22px; background-color: var(--danger-bg); color: var(--danger);" onclick="logout()">Log Out</button>
+       function renderSettings() {
+    const s = state.settings;
+    return `
+        <div class="page">
+            <div class="card" style="display: flex; align-items: center; gap: 14px;">
+                <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--gradient); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 19px; flex-shrink: 0;">
+                    ${((currentUser && currentUser.fullName) || 'Guest User').split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase()}
                 </div>
-            `;
-        }
+                <div style="min-width: 0;">
+                    <p style="font-weight: 700; font-size: 15px;">${(currentUser && currentUser.fullName) || 'Guest User'}</p>
+                    <p style="font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${(currentUser && currentUser.email) || ''}</p>
+                </div>
+            </div>
+
+            <h3 style="font-weight: 700; font-size: 13px; margin: 20px 0 10px; color: var(--ink-soft); letter-spacing: 0.02em;">ACCOUNT</h3>
+            <div class="card" style="padding: 4px 16px;">
+                <div class="settings-row" onclick="openEditProfileModal()">
+                    <span>Edit Profile</span>
+                    <span class="card-chevron">›</span>
+                </div>
+                <div class="settings-row" onclick="openChangePasswordModal()">
+                    <span>Change Password</span>
+                    <span class="card-chevron">›</span>
+                </div>
+                <div class="settings-row" onclick="openInsuranceModal()">
+                    <span>Insurance &amp; Billing</span>
+                    <span class="card-chevron">›</span>
+                </div>
+            </div>
+
+            <h3 style="font-weight: 700; font-size: 13px; margin: 20px 0 10px; color: var(--ink-soft); letter-spacing: 0.02em;">PREFERENCES</h3>
+            <div class="card" style="padding: 4px 16px;">
+                <div class="settings-row">
+                    <span>Push Notifications</span>
+                    <button class="toggle ${s.pushNotifications ? 'on' : ''}" onclick="toggleSetting('pushNotifications')" aria-label="Toggle push notifications"><span class="knob"></span></button>
+                </div>
+                <div class="settings-row">
+                    <span>Email Reminders</span>
+                    <button class="toggle ${s.emailReminders ? 'on' : ''}" onclick="toggleSetting('emailReminders')" aria-label="Toggle email reminders"><span class="knob"></span></button>
+                </div>
+                <!-- Face ID Login row removed for security -->
+            </div>
+
+            <h3 style="font-weight: 700; font-size: 13px; margin: 20px 0 10px; color: var(--ink-soft); letter-spacing: 0.02em;">SUPPORT</h3>
+            <div class="card" style="padding: 4px 16px;">
+                <div class="settings-row" onclick="showToast('Opening Help Center')">
+                    <span>Help Center</span>
+                    <span class="card-chevron">›</span>
+                </div>
+                <div class="settings-row" onclick="showToast('Opening contact support')">
+                    <span>Contact Support</span>
+                    <span class="card-chevron">›</span>
+                </div>
+                <div class="settings-row" onclick="showToast('OptiLink v1.0.0')">
+                    <span>About OptiLink</span>
+                    <span class="card-chevron">›</span>
+                </div>
+            </div>
+
+            <button class="btn btn-block" style="margin-top: 22px; background-color: var(--danger-bg); color: var(--danger);" onclick="logout()">Log Out</button>
+        </div>
+    `;
+}
 
         async function toggleSetting(key) {
             state.settings[key] = !state.settings[key];
