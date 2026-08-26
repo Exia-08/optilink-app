@@ -28,7 +28,7 @@ async function requireAdmin(req, res, next) {
     next();
 }
 
-// ---------- Client DB models ----------
+// ---------- Client DB model definitions ----------
 const clientConn = getClientConnection();
 
 const appointmentSchema = new mongoose.Schema({
@@ -190,7 +190,6 @@ router.post('/documents', requireAdmin, upload.single('file'), async (req, res) 
             clinicId: req.admin.clinicId || null,
             date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
         });
-
         res.status(201).json({ document: doc });
     } catch (err) {
         console.error(err);
