@@ -21,24 +21,27 @@ router.post('/', async (req, res) => {
     const user = await getUserFromToken(req);
     if (!user) return res.status(401).json({ error: 'Not logged in' });
 
-    const { fullName, email, phone, notes, date, time, type } = req.body;
+    // Destructure all fields including clinic info
+    const { fullName, email, phone, notes, date, time, type, clinic, clinicAddress, clinicId } = req.body;
+
     if (!fullName || !email || !date || !time) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
-   const appointment = await Appointment.create({
-    userId: user._id,
-    fullName,
-    email,
-    phone,
-    notes,
-    date,
-    time,
-    type: type || 'Eye Exam',
-    clinic: clinic,
-    clinicAddress: clinicAddress,
-    clinicId: clinicId || null
-});
+    const appointment = await Appointment.create({
+        userId: user._id,
+        fullName,
+        email,
+        phone,
+        notes,
+        date,
+        time,
+        type: type || 'Eye Exam',
+        clinic: clinic || '',
+        clinicAddress: clinicAddress || '',
+        clinicId: clinicId || null
+    });
+
     res.status(201).json({ appointment });
 });
 
