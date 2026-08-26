@@ -706,12 +706,14 @@
 
         let currentUser = null;
         let documents = [];
+        let appointments = [];
         let cameraStream = null;
         let cameraFacingMode = 'user';
         let faceMesh = null;
         let faceMeshRunning = false;
         let lastVideoTime = -1;
         let canvasCtx = null;
+        
 
         async function loadCurrentUser() {
             const resp = await fetch('/api/auth/me');
@@ -737,7 +739,24 @@
                 documents = [];
             }
         }
-
+        async function loadAppointments() {
+    try {
+        const resp = await fetch('/api/appointments');
+        const data = await resp.json();
+        if (resp.ok) {
+            appointments = data.appointments || [];
+        } else {
+            appointments = [];
+        }
+    } catch (err) {
+        appointments = [];
+    }
+}
+async function refreshHome() {
+    await loadAppointments();
+    renderPage();
+    showToast('Home refreshed');
+}
         async function loadStock() {
             try {
                 const url = state.selectedStockClinic
@@ -801,6 +820,7 @@
             document.getElementById('main').scrollTop = 0;
             if (page === 'records') await loadDocuments();
             if (page === 'stock') await loadStock();
+            if (page === 'home') await loadAppointments();
             renderPage();
         }
 
@@ -1072,53 +1092,80 @@
             }
         }
 
-        function renderHome() {
+      function renderHome() {
+    // Get today's date label
+    const todayLabel = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+    // Build appointments list HTML
+    const appointmentListHtml = appointments.length === 0
+        ? `<p style="color: var(--muted); font-size: 13px;">No appointments yet. Book your first appointment now.</p>`
+        : appointments.map(app => {
+            let statusClass = 'pending';
+            if (app.status === 'Approved') statusClass = 'in';
+            else if (app.status === 'Cancelled') statusClass = 'out';
+            else if (app.status === 'Pending') statusClass = 'pending';
             return `
-                <div class="page">
-                    <div style="margin-bottom: 18px;">
-                        <h1 style="font-size: 21px; font-weight: 700;">Welcome back 👋</h1>
-                        <p style="color: var(--muted); font-size: 13.5px; margin-top: 4px;">What would you like to do today?</p>
+                <div class="card" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                    <div style="flex: 1;">
+                        <p style="font-weight: 700; font-size: 15px;">${app.type || 'Eye Exam'}</p>
+                        <p style="font-size: 12.5px; color: var(--muted); margin-top: 2px;">${app.date} at ${app.time}</p>
+                        <p style="font-size: 12px; color: var(--muted);">${app.clinic || ''}</p>
                     </div>
-
-                    <div class="card card-tap" onclick="showPage('records')">
-                        <div class="card-icon">📄</div>
-                        <div>
-                            <h3 style="font-weight: 700; font-size: 15px; margin-bottom: 2px;">Your Records</h3>
-                            <p style="font-size: 12.5px; color: var(--muted);">Prescriptions &amp; eye exam reports</p>
-                        </div>
-                        <span class="card-chevron">›</span>
-                    </div>
-
-                    <div class="card card-tap" onclick="showPage('tryon')">
-                        <div class="card-icon">👁️</div>
-                        <div>
-                            <h3 style="font-weight: 700; font-size: 15px; margin-bottom: 2px;">Virtual Try&#8209;On</h3>
-                            <p style="font-size: 12.5px; color: var(--muted);">See frames on your face with the camera</p>
-                        </div>
-                        <span class="card-chevron">›</span>
-                    </div>
-
-                    <div class="card card-tap" onclick="showPage('stock')">
-                        <div class="card-icon">📦</div>
-                        <div>
-                            <h3 style="font-weight: 700; font-size: 15px; margin-bottom: 2px;">Stock Availability</h3>
-                            <p style="font-size: 12.5px; color: var(--muted);">Real-time frame &amp; lens inventory</p>
-                        </div>
-                        <span class="card-chevron">›</span>
-                    </div>
-
-                    <div class="card card-tap" onclick="showPage('booking')">
-                        <div class="card-icon">📅</div>
-                        <div>
-                            <h3 style="font-weight: 700; font-size: 15px; margin-bottom: 2px;">Book Appointment</h3>
-                            <p style="font-size: 12.5px; color: var(--muted);">Schedule an exam or consultation</p>
-                        </div>
-                        <span class="card-chevron">›</span>
-                    </div>
+                    <span class="badge ${statusClass}">${app.status}</span>
                 </div>
             `;
-        }
+        }).join('');
 
+    return `
+        <div class="page">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                <div>
+                    <h1 style="font-size: 21px; font-weight: 700;">Welcome back 👋</h1>
+                    <p style="color: var(--muted); font-size: 13.5px; margin-top: 4px;">${todayLabel}</p>
+                </div>
+                <button class="icon-btn" onclick="refreshHome()" aria-label="Refresh">
+                    🔄
+                </button>
+            </div>
+
+            <div class="card card-tap" onclick="showPage('records')">
+                <div class="card-icon">📄</div>
+                <div>
+                    <h3 style="font-weight: 700; font-size: 15px; margin-bottom: 2px;">Your Records</h3>
+                    <p style="font-size: 12.5px; color: var(--muted);">Prescriptions &amp; eye exam reports</p>
+                </div>
+                <span class="card-chevron">›</span>
+            </div>
+            <div class="card card-tap" onclick="showPage('tryon')">
+                <div class="card-icon">👁️</div>
+                <div>
+                    <h3 style="font-weight: 700; font-size: 15px; margin-bottom: 2px;">Virtual Try&#8209;On</h3>
+                    <p style="font-size: 12.5px; color: var(--muted);">See frames on your face with the camera</p>
+                </div>
+                <span class="card-chevron">›</span>
+            </div>
+            <div class="card card-tap" onclick="showPage('stock')">
+                <div class="card-icon">📦</div>
+                <div>
+                    <h3 style="font-weight: 700; font-size: 15px; margin-bottom: 2px;">Stock Availability</h3>
+                    <p style="font-size: 12.5px; color: var(--muted);">Real-time frame &amp; lens inventory</p>
+                </div>
+                <span class="card-chevron">›</span>
+            </div>
+            <div class="card card-tap" onclick="showPage('booking')">
+                <div class="card-icon">📅</div>
+                <div>
+                    <h3 style="font-weight: 700; font-size: 15px; margin-bottom: 2px;">Book Appointment</h3>
+                    <p style="font-size: 12.5px; color: var(--muted);">Schedule an exam or consultation</p>
+                </div>
+                <span class="card-chevron">›</span>
+            </div>
+
+            <h3 style="font-weight: 700; font-size: 16px; margin: 24px 0 12px; color: var(--ink);">My Appointments</h3>
+            ${appointmentListHtml}
+        </div>
+    `;
+}
         function renderRecords() {
             return `
                 <div class="page">
