@@ -85,7 +85,7 @@ if (clientConn) {
 router.get('/appointments', requireAdmin, async (req, res) => {
     if (!ClientAppointment) return res.status(500).json({ error: 'Client DB not connected' });
 
-    const filter = {}; // temporarily ignore clinic filter
+    const filter = {}; // temporarily show all appointments (ignore clinic filter)
     const appointments = await ClientAppointment.find(filter).sort({ createdAt: -1 });
 
     res.json({
