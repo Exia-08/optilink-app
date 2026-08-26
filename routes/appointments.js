@@ -22,7 +22,7 @@ router.post('/', async (req, res) => {
     if (!user) return res.status(401).json({ error: 'Not logged in' });
 
     const { fullName, email, phone, notes, date, time, type } = req.body;
-    if (!fullName || !email || !phone || !date || !time) {
+    if (!fullName || !email || !date || !time) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
