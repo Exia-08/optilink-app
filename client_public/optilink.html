@@ -1096,7 +1096,7 @@ async function refreshHome() {
     // Get today's date label
     const todayLabel = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
-    // Build appointments list HTML
+    // Build the appointments list HTML
     const appointmentListHtml = appointments.length === 0
         ? `<p style="color: var(--muted); font-size: 13px;">No appointments yet. Book your first appointment now.</p>`
         : appointments.map(app => {
