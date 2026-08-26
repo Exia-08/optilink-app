@@ -111,22 +111,20 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// ---------- ADMIN REGISTRATION ----------
+// ---------- ADMIN REGISTRATION (CLINIC-SPECIFIC) ----------
 router.post('/register', async (req, res) => {
     try {
-        const { firstName, lastName, email, role, clinicId, password } = req.body;
+        const { username, email, role, clinicId, password } = req.body;
 
-        if (!firstName || !lastName || !email || !role || !clinicId || !password) {
+        if (!username || !email || !role || !clinicId || !password) {
             return res.status(400).json({ error: 'All fields are required' });
         }
-
-        const username = email.split('@')[0];
 
         const existing = await User.findOne({ $or: [{ username }, { email }] });
         if (existing) return res.status(400).json({ error: 'Username or email already exists' });
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const fullName = `${firstName} ${lastName}`;
+        const fullName = username; // or you can keep a separate fullName if desired
 
         const user = await User.create({
             fullName,
