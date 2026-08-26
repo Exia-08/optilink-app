@@ -664,144 +664,51 @@
             else if (state.currentPage === 'settings') main.innerHTML = renderSettings();
         }
 
-        // ---------- POLLING for real-time updates ----------
-        let refreshInterval = null;
+      // ---------- POLLING for real-time updates ----------
+let refreshInterval = null;
 
-        function startPolling() {
-            if (refreshInterval) return;
-            refreshInterval = setInterval(async () => {
-                if (state.currentPage === 'home' || state.currentPage === 'appointments') {
-                    await Promise.all([loadAppointments(), loadSummary()]);
-                    renderPage();
-                }
-            }, 5000); // poll every 5 seconds
-        }
-
-        function stopPolling() {
-            if (refreshInterval) {
-                clearInterval(refreshInterval);
-                refreshInterval = null;
+function startPolling() {
+    if (refreshInterval) return;
+    refreshInterval = setInterval(async () => {
+        // Only refresh when on home or appointments pages
+        if (state.currentPage === 'home' || state.currentPage === 'appointments') {
+            try {
+                await Promise.all([loadAppointments(), loadSummary()]);
+                renderPage();
+            } catch (err) {
+                console.error('Polling refresh error:', err);
             }
         }
+    }, 5000); // poll every 5 seconds
+}
 
-        // Start polling on page load and when visible
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                stopPolling();
-            } else {
-                startPolling();
-            }
-        });
+function stopPolling() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+    }
+}
 
-        function renderHome() {
-            const weekly = summary.weeklyAppointments && summary.weeklyAppointments.length
-                ? summary.weeklyAppointments
-                : [
-                    { label: 'Mon', value: 0 }, { label: 'Tue', value: 0 }, { label: 'Wed', value: 0 },
-                    { label: 'Thu', value: 0 }, { label: 'Fri', value: 0 }, { label: 'Sat', value: 0 }, { label: 'Sun', value: 0 }
-                ];
-            const max = Math.max(...weekly.map(x => x.value), 1);
-            return `
-                <div style="margin-bottom: 24px;">
-                    <h2 style="font-size: 22px; font-weight: 700;">Good Morning, Admin 👋</h2>
-                    <p style="color: var(--muted); font-size: 14px; margin-top: 4px;">Here is your clinic overview for today.</p>
-                </div>
-                <div class="grid-3">
-                    <div class="card">
-                        <div style="font-size: 24px; margin-bottom: 10px;">📅</div>
-                        <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 4px;">${summary.totalAppointments ?? appointments.length}</h3>
-                        <p style="color: var(--muted); font-size: 13px;">Upcoming Appointments</p>
-                    </div>
-                    <div class="card">
-                        <div style="font-size: 24px; margin-bottom: 10px;">⚠️</div>
-                        <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 4px;">${summary.lowStock ?? 0}</h3>
-                        <p style="color: var(--muted); font-size: 13px;">Low Stock Alerts</p>
-                    </div>
-                    <div class="card">
-                        <div style="font-size: 24px; margin-bottom: 10px;">📁</div>
-                        <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 4px;">${summary.totalClients ?? 0}</h3>
-                        <p style="color: var(--muted); font-size: 13px;">Total Clients</p>
-                    </div>
-                </div>
-
-                <div class="card" style="margin-top: 24px;">
-                    <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 4px;">
-                        <h3 style="font-weight: 700; font-size: 16px;">Appointments This Week</h3>
-                        <span class="badge in">${weekly.reduce((s,d) => s + d.value, 0)} total</span>
-                    </div>
-                    <div class="chart-wrap">
-                        ${weekly.map(d => `
-                            <div class="chart-bar-col">
-                                <div class="chart-bar" style="height: ${Math.max((d.value / max) * 100, 6)}%;" title="${d.label}: ${d.value} appointments"></div>
-                                <div class="chart-bar-label">${d.label}</div>
-                            </div>`).join('')}
-                    </div>
-                </div>
-
-                <h3 style="font-weight: 700; font-size: 16px; margin: 24px 0 12px; color: var(--ink);">Today's Schedule</h3>
-                ${appointments.slice(0,2).map(app => `
-                    <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <p style="font-weight: 700;">${app.name} - <span style="color: var(--blue);">${app.type}</span></p>
-                            <p style="color: var(--muted); font-size: 12.5px; margin-top: 4px;">${app.time}</p>
-                        </div>
-                        <button class="btn btn-primary" onclick="viewAppointment('${app.id}')">View</button>
-                    </div>
-                `).join('')}
-            `;
+// Start polling on page load and when visible
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        stopPolling();
+    } else {
+        // Only restart if we are on a relevant page
+        if (state.currentPage === 'home' || state.currentPage === 'appointments') {
+            startPolling();
         }
+    }
+});
 
-        function renderAppointments() {
-            return `
-                <div style="display: flex; flex-direction: column; gap: 14px;">
-                    ${appointments.map(app => {
-                        const statusClass = app.status === 'Approved' ? 'in' : app.status === 'Cancelled' ? 'out' : 'pending';
-                        return `
-                        <div class="card">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                <div>
-                                    <p style="font-weight: 700; font-size: 16px;">${app.name}</p>
-                                    <p style="color: var(--muted); font-size: 13px; margin: 4px 0;">${app.date} at ${app.time}</p>
-                                    <span class="badge pending">${app.type}</span>
-                                </div>
-                                <span class="badge ${statusClass}">${app.status}</span>
-                            </div>
-                            <div style="display: flex; gap: 10px; margin-top: 16px; border-top: 1px solid var(--border); padding-top: 16px;">
-                                <button class="btn btn-outline" style="flex: 1;" onclick="viewAppointment('${app.id}')">View</button>
-                                <button class="btn btn-primary" style="flex: 1;" onclick="approveAppointment('${app.id}')" ${app.status === 'Approved' ? 'disabled' : ''}>Approve</button>
-                                <button class="btn btn-danger" style="flex: 1;" onclick="cancelAppointment('${app.id}')" ${app.status === 'Cancelled' ? 'disabled' : ''}>Cancel</button>
-                            </div>
-                        </div>
-                    `}).join('')}
-                </div>
-            `;
-        }
-
-        function renderInventory() {
-            return `
-                <div style="display: flex; flex-direction: column; gap: 14px;">
-                    ${stock.map(item => {
-                        const statusClass = item.qty > 15 ? 'in' : item.qty > 0 ? 'low' : 'out';
-                        const statusLabel = item.qty > 15 ? 'In Stock' : item.qty > 0 ? 'Low Stock' : 'Out of Stock';
-                        return `
-                        <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
-                            <div style="flex: 1; min-width: 200px;">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <p style="font-weight: 700; font-size: 15px;">${item.name}</p>
-                                    <span class="badge ${statusClass}">${statusLabel}</span>
-                                </div>
-                                <p style="color: var(--muted); font-size: 13px; margin-top: 6px;">Qty: ${item.qty} / ${item.total}</p>
-                                <div style="width: 100%; height: 6px; background-color: var(--surface-alt); border-radius: 3px; margin-top: 10px;">
-                                    <div style="height: 100%; border-radius: 3px; width: ${(item.qty/item.total)*100}%; background-color: ${item.qty > 15 ? 'var(--success)' : item.qty > 0 ? 'var(--warning)' : 'var(--danger)'};"></div>
-                                </div>
-                            </div>
-                            <button class="btn btn-outline" onclick="restockItem(${item.id})">Restock</button>
-                        </div>
-                    `}).join('')}
-                </div>
-            `;
-        }
-
+// ---------- Bootstrap (initialize and start polling) ----------
+(async function bootstrap() {
+    const admin = await loadCurrentAdmin();
+    if (!admin) return;
+    await Promise.all([loadAppointments(), loadStock(), loadRecords(), loadSummary()]);
+    renderPage();
+    startPolling(); // ✅ Start polling after initial load
+})();
         function renderRecords() {
             return `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
