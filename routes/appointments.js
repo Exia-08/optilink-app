@@ -6,7 +6,7 @@ const { getClientConnection } = require('../clientDB');
 
 const router = express.Router();
 
-// ---------- Client DB model definition ----------
+// ---------- Client DB model definition (Appointment only) ----------
 const clientConn = getClientConnection();
 
 const appointmentSchema = new mongoose.Schema({
@@ -26,13 +26,9 @@ const appointmentSchema = new mongoose.Schema({
 });
 
 let ClientAppointment = null;
-let ClientStockItem = null;
-let ClientDocument = null;
 
 if (clientConn) {
     ClientAppointment = clientConn.models['Appointment'] || clientConn.model('Appointment', appointmentSchema);
-    ClientStockItem = clientConn.models['StockItem'] || clientConn.model('StockItem', stockItemSchema);
-    ClientDocument = clientConn.models['Document'] || clientConn.model('Document', documentSchema);
 }
 
 // ---------- Auth helper ----------
@@ -47,7 +43,6 @@ async function getUserFromToken(req) {
     }
 }
 
-// ---------- Routes ----------
 // POST /api/appointments - create booking
 router.post('/', async (req, res) => {
     if (!ClientAppointment) return res.status(500).json({ error: 'Client DB not connected' });
@@ -82,7 +77,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-// GET /api/appointments - list current user's appointments
+// GET /api/appointments - list current user's appointments (optional)
 router.get('/', async (req, res) => {
     if (!ClientAppointment) return res.json({ appointments: [] });
 
