@@ -33,11 +33,12 @@ mongoose.connect(process.env.MONGODB_URI, {
     process.exit(1);
 });
 
-// Always connect to client database if URI provided
-if (process.env.CLIENT_MONGODB_URI) {
-    initClientDB(process.env.CLIENT_MONGODB_URI);
+// Always connect to the client database (fallback to primary URI)
+const clientUri = process.env.CLIENT_MONGODB_URI || process.env.MONGODB_URI;
+if (clientUri) {
+    initClientDB(clientUri);
 } else {
-    console.warn('⚠️ CLIENT_MONGODB_URI not set. Client booking will not work.');
+    console.warn('⚠️ No MongoDB URI available for client DB. Client booking will not work.');
 }
 
 // Routes
