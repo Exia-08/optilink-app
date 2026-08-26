@@ -76,9 +76,9 @@ let ClientStockItem = null;
 let ClientDocument = null;
 
 if (clientConn) {
-    ClientAppointment = clientConn.model('Appointment', appointmentSchema);
-    ClientStockItem = clientConn.model('StockItem', stockItemSchema);
-    ClientDocument = clientConn.model('Document', documentSchema);
+    ClientAppointment = clientConn.models['Appointment'] || clientConn.model('Appointment', appointmentSchema);
+    ClientStockItem = clientConn.models['StockItem'] || clientConn.model('StockItem', stockItemSchema);
+    ClientDocument = clientConn.models['Document'] || clientConn.model('Document', documentSchema);
 }
 
 // ---------- Appointments ----------
