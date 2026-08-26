@@ -38,7 +38,7 @@
             display: block;
             margin-bottom: 4px;
         }
-        input {
+        input, select {
             width: 100%;
             padding: 10px 12px;
             border: 1.5px solid #E7E4F5;
@@ -83,30 +83,31 @@
         <h1>Create Admin Account</h1>
         <p class="sub">Temporary registration — use only once.</p>
         <form id="registerForm">
-            <label for="firstName">First Name</label>
-            <input type="text" id="firstName" required>
-
-            <label for="lastName">Last Name</label>
-            <input type="text" id="lastName" required>
+            <label for="username">Username / ID</label>
+            <input type="text" id="username" required autocomplete="username">
 
             <label for="email">Email</label>
-            <input type="email" id="email" required>
+            <input type="email" id="email" required autocomplete="email">
 
             <label for="role">Role</label>
-            <input type="text" id="role" value="super_admin" required>
+            <select id="role" required>
+                <option value="super_admin">Super Admin</option>
+                <option value="clinic_admin">Clinic Admin</option>
+                <option value="staff">Staff</option>
+            </select>
 
-<label for="clinicId">Clinic</label>
-<select id="clinicId" required>
-    <option value="">Select clinic...</option>
-    <option value="clinic1">OptiLink Main Branch</option>
-    <option value="clinic2">OptiLink SM North EDSA</option>
-    <option value="clinic3">OptiLink Medical Plaza</option>
-    <option value="clinic4">OptiLink Ayala Center</option>
-    <option value="clinic5">OptiLink BGC</option>
-</select>
+            <label for="clinicId">Clinic</label>
+            <select id="clinicId" required>
+                <option value="">Select clinic...</option>
+                <option value="clinic1">OptiLink Main Branch</option>
+                <option value="clinic2">OptiLink SM North EDSA</option>
+                <option value="clinic3">OptiLink Medical Plaza</option>
+                <option value="clinic4">OptiLink Ayala Center</option>
+                <option value="clinic5">OptiLink BGC</option>
+            </select>
 
             <label for="password">Password</label>
-            <input type="password" id="password" required minlength="8">
+            <input type="password" id="password" required minlength="8" autocomplete="new-password">
 
             <button type="submit" id="submitBtn">Create Account</button>
         </form>
@@ -128,11 +129,10 @@
             btn.textContent = 'Creating...';
 
             const payload = {
-                firstName: document.getElementById('firstName').value.trim(),
-                lastName: document.getElementById('lastName').value.trim(),
+                username: document.getElementById('username').value.trim(),
                 email: document.getElementById('email').value.trim(),
-                role: document.getElementById('role').value.trim(),
-                clinicId: document.getElementById('clinicId').value.trim(),
+                role: document.getElementById('role').value,
+                clinicId: document.getElementById('clinicId').value,
                 password: document.getElementById('password').value
             };
 
@@ -146,7 +146,7 @@
                 if (!resp.ok) {
                     showToast(data.error || 'Registration failed');
                 } else {
-                    showToast('✅ Admin created! Username is: ' + payload.email.split('@')[0]);
+                    showToast('✅ Admin created! Username: ' + payload.username);
                 }
             } catch (err) {
                 showToast('Network error — server not reachable');
