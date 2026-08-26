@@ -1,3 +1,4 @@
+// routes/appointments.js
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const Appointment = require('../models/Appointment');
@@ -16,39 +17,43 @@ async function getUserFromToken(req) {
     }
 }
 
-// Create appointment
+// POST /api/appointments — client creates booking
 router.post('/', async (req, res) => {
     const user = await getUserFromToken(req);
     if (!user) return res.status(401).json({ error: 'Not logged in' });
 
-    // Destructure all fields including clinic info
     const { fullName, email, phone, notes, date, time, type, clinic, clinicAddress, clinicId } = req.body;
-
-    if (!fullName || !email || !date || !time) {
+    if (!fullName || !email || !phone || !date || !time || !clinicId) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const appointment = await Appointment.create({
-        userId: user._id,
-        fullName,
-        email,
-        phone,
-        notes,
-        date,
-        time,
-        type: type || 'Eye Exam',
-        clinic: clinic || '',
-        clinicAddress: clinicAddress || '',
-        clinicId: clinicId || null
-    });
-
-    res.status(201).json({ appointment });
+    try {
+        const appointment = await Appointment.create({
+            userId: user._id,
+            fullName,
+            email,
+            phone,
+            notes,
+            date,
+            time,
+            type: type || 'Eye Exam',
+            clinic,
+            clinicAddress,
+            clinicId,
+            status: 'Pending'
+        });
+        res.status(201).json({ appointment });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
 });
 
-// Get user's appointments
-router.get('/mine', async (req, res) => {
+// GET /api/appointments — list current user's appointments (optional)
+router.get('/', async (req, res) => {
     const user = await getUserFromToken(req);
     if (!user) return res.status(401).json({ appointments: [] });
+
     const appointments = await Appointment.find({ userId: user._id }).sort({ createdAt: -1 });
     res.json({ appointments });
 });
