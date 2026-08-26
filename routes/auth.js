@@ -84,7 +84,6 @@ router.post('/login', async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
 
-        // If login requests a specific role, verify the user has that role
         if (role && user.role !== role) {
             return res.status(403).json({ error: 'Unauthorized role' });
         }
@@ -112,17 +111,19 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// ---------- ADMIN REGISTRATION (CLINIC-SPECIFIC) ----------
+// ---------- ADMIN REGISTRATION ----------
 router.post('/register', async (req, res) => {
     try {
-        const { firstName, lastName, username, role, clinicId, password } = req.body;
+        const { firstName, lastName, email, role, clinicId, password } = req.body;
 
-        if (!firstName || !lastName || !username || !role || !clinicId || !password) {
+        if (!firstName || !lastName || !email || !role || !clinicId || !password) {
             return res.status(400).json({ error: 'All fields are required' });
         }
 
-        const existing = await User.findOne({ username });
-        if (existing) return res.status(400).json({ error: 'Username already exists' });
+        const username = email.split('@')[0];
+
+        const existing = await User.findOne({ $or: [{ username }, { email }] });
+        if (existing) return res.status(400).json({ error: 'Username or email already exists' });
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const fullName = `${firstName} ${lastName}`;
@@ -130,6 +131,7 @@ router.post('/register', async (req, res) => {
         const user = await User.create({
             fullName,
             username,
+            email,
             password: hashedPassword,
             role: 'admin',
             adminRole: role,
