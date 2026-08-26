@@ -9,7 +9,7 @@ const { initClientDB } = require('./clientDB');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Determine which public folder to serve based on APP_TYPE
+// Determine which public folder to serve
 const APP_TYPE = process.env.APP_TYPE || 'client';
 const PUBLIC_DIR = APP_TYPE === 'admin' ? 'admin_public' : 'client_public';
 
@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Serve static files from the appropriate folder
+// Serve static files
 app.use(express.static(path.join(__dirname, PUBLIC_DIR)));
 
 // Connect to primary database
@@ -33,9 +33,11 @@ mongoose.connect(process.env.MONGODB_URI, {
     process.exit(1);
 });
 
-// If this is the admin service, connect to the client DB as well
-if (APP_TYPE === 'admin' && process.env.CLIENT_MONGODB_URI) {
+// Always connect to client database if URI provided
+if (process.env.CLIENT_MONGODB_URI) {
     initClientDB(process.env.CLIENT_MONGODB_URI);
+} else {
+    console.warn('⚠️ CLIENT_MONGODB_URI not set. Client booking will not work.');
 }
 
 // Routes
@@ -87,7 +89,7 @@ async function seedStock() {
 }
 seedStock();
 
-// Catch-all: serve the appropriate entry HTML file
+// Catch-all: serve the appropriate entry HTML file (AFTER API routes)
 app.get('*', (req, res) => {
     const entryFile = APP_TYPE === 'admin' ? 'admin-login.html' : 'index.html';
     res.sendFile(path.join(__dirname, PUBLIC_DIR, entryFile));
