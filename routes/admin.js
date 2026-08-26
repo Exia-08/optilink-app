@@ -85,7 +85,7 @@ if (clientConn) {
 router.get('/appointments', requireAdmin, async (req, res) => {
     if (!ClientAppointment) return res.status(500).json({ error: 'Client DB not connected' });
 
-    const filter = req.admin.clinicId ? { clinicId: req.admin.clinicId } : {};
+    const filter = {}; // temporarily ignore clinic filter
     const appointments = await ClientAppointment.find(filter).sort({ createdAt: -1 });
 
     res.json({
@@ -132,7 +132,7 @@ router.get('/stock', requireAdmin, async (req, res) => {
     if (!ClientStockItem) return res.status(500).json({ error: 'Client DB not connected' });
 
     const stockFilter = req.admin.clinicId ? { clinicId: req.admin.clinicId } : {};
-    const stock = await ClientStockItem.find(stockFilter).sort({ name: 1 });
+    const stock = await ClientStockItem.find({}).sort({ name: 1 });
     res.json({ stock });
 });
 
@@ -239,9 +239,9 @@ router.get('/summary', requireAdmin, async (req, res) => {
         return res.status(500).json({ error: 'Client DB not connected' });
     }
 
-    const clinicId = req.admin.clinicId || null;
-    const appointmentFilter = clinicId ? { clinicId } : {};
-    const stockFilter = clinicId ? { clinicId } : {};
+    const clinicId = null; // ignore clinic scoping
+    const appointmentFilter = {};
+    const stockFilter = {};
 
     const totalAppointments = await ClientAppointment.countDocuments(appointmentFilter);
     const pending = await ClientAppointment.countDocuments({ ...appointmentFilter, status: 'Pending' });
