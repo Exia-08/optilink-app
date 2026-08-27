@@ -1249,77 +1249,87 @@ async function refreshHome() {
         }
 
         function renderStockCard(item) {
-            const statusClass = item.quantity > 15 ? 'in' : item.quantity > 0 ? 'low' : 'out';
-            const statusLabel = item.quantity > 15 ? '✓ In Stock' : item.quantity > 0 ? '⚠ Low Stock' : '✗ Out';
-            const barColor = item.quantity > 15 ? 'var(--success)' : item.quantity > 0 ? 'var(--warning)' : 'var(--danger)';
-            return `
-                <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
-                        <div>
-                            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                                <p style="font-weight: 700;">${item.name}</p>
-                                ${item.tag ? `<span class="tag-pill">${item.tag}</span>` : ''}
-                            </div>
-                            <p style="font-size: 12.5px; color: var(--muted); margin-top: 2px;">${item.quantity}/${item.total} available</p>
-                            ${item.desc ? `<p style="font-size: 12.5px; color: var(--ink-soft); margin-top: 6px;">${item.desc}</p>` : ''}
-                        </div>
-                        <span class="badge ${statusClass}">${statusLabel}</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-bar-fill" style="width: ${(item.quantity / item.total) * 100}%; background-color: ${barColor};"></div>
-                    </div>
-                </div>
-            `;
-        }
+    const statusClass = item.quantity > 15 ? 'in' : item.quantity > 0 ? 'low' : 'out';
+    const statusLabel = item.quantity > 15 ? '✓ In Stock' : item.quantity > 0 ? '⚠ Low Stock' : '✗ Out';
+    const barColor = item.quantity > 15 ? 'var(--success)' : item.quantity > 0 ? 'var(--warning)' : 'var(--danger)';
 
+    // Find clinic name from clinics array
+    const clinic = clinics.find(c => c.id === item.clinicId);
+    const clinicName = clinic ? clinic.name : 'All Clinics';
+
+    return `
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                        <p style="font-weight: 700;">${item.name}</p>
+                        ${item.tag ? `<span class="tag-pill">${item.tag}</span>` : ''}
+                    </div>
+                    <p style="font-size: 12.5px; color: var(--muted); margin-top: 2px;">${item.quantity}/${item.total} available</p>
+                    <p style="font-size: 12px; color: var(--ink-soft); margin-top: 4px;">🏥 ${clinicName}</p>
+                    ${item.desc ? `<p style="font-size: 12.5px; color: var(--ink-soft); margin-top: 6px;">${item.desc}</p>` : ''}
+                </div>
+                <span class="badge ${statusClass}">${statusLabel}</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-bar-fill" style="width: ${(item.quantity / item.total) * 100}%; background-color: ${barColor};"></div>
+            </div>
+        </div>
+    `;
+}
         function renderStock() {
-            const filteredStock = state.stockFilter === 'all'
-                ? stock
-                : stock.filter(item => item.type === state.stockFilter.slice(0, -1));
+    const filteredStock = state.stockFilter === 'all'
+        ? stock
+        : stock.filter(item => item.type === state.stockFilter.slice(0, -1)); // "frames" -> "frame", "lenses" -> "lens"
 
-            const lensView = state.stockFilter === 'lenses';
+    const lensView = state.stockFilter === 'lenses';
 
-            return `
-                <div class="page">
-                    <label class="field-label" for="stockClinicSelect">Choose Clinic</label>
-                    <select id="stockClinicSelect" class="input-field" onchange="selectStockClinic(this.value)">
-                        <option value="">All Clinics</option>
-                        ${clinics.map(c => `
-                            <option value="${c.id}" ${state.selectedStockClinic === c.id ? 'selected' : ''}>${c.name}</option>
-                        `).join('')}
-                    </select>
+    // Build list of cards (with empty state)
+    const cardsHtml = filteredStock.length === 0
+        ? `<p style="color: var(--muted); font-size: 13px; text-align: center; padding: 20px 0;">No items found for the selected filters.</p>`
+        : (lensView
+            ? lensCategories.map(cat => {
+                const items = filteredStock.filter(i => i.category === cat);
+                if (items.length === 0) return '';
+                return `
+                    <h3 style="font-weight: 700; font-size: 13px; margin: 18px 0 10px; color: var(--ink-soft); letter-spacing: 0.02em;">${cat.toUpperCase()}</h3>
+                    ${items.map(renderStockCard).join('')}
+                `;
+            }).join('')
+            : filteredStock.map(renderStockCard).join('')
+        );
 
-                    <div style="display: flex; gap: 8px; margin: 18px 0;">
-                        <button class="chip ${state.stockFilter === 'all' ? 'active' : ''}" onclick="filterStock('all')">All</button>
-                        <button class="chip ${state.stockFilter === 'frames' ? 'active' : ''}" onclick="filterStock('frames')">Frames</button>
-                        <button class="chip ${state.stockFilter === 'lenses' ? 'active' : ''}" onclick="filterStock('lenses')">Lenses</button>
-                    </div>
+    return `
+        <div class="page">
+            <label class="field-label" for="stockClinicSelect">Choose Clinic</label>
+            <select id="stockClinicSelect" class="input-field" onchange="selectStockClinic(this.value)">
+                <option value="">All Clinics</option>
+                ${clinics.map(c => `
+                    <option value="${c.id}" ${state.selectedStockClinic === c.id ? 'selected' : ''}>${c.name}</option>
+                `).join('')}
+            </select>
 
-                    ${lensView ? `
-                        <div class="info-box" style="margin-bottom: 14px;">
-                            <p style="font-weight: 700; margin-bottom: 6px; color: var(--ink);">🔎 Choosing a Lens</p>
-                            <p style="margin: 0 0 8px;">Every lens can be added to any frame at checkout. Lenses come in three groups:</p>
-                            <p style="margin: 0 0 3px;"><strong>Prescription</strong> — corrects your vision (single vision, progressive, bifocal, high-index).</p>
-                            <p style="margin: 0 0 3px;"><strong>Coatings &amp; Enhancements</strong> — added protection like anti-glare, scratch resistance, and UV/blue-light filtering.</p>
-                            <p style="margin: 0;"><strong>Specialty</strong> — situational lenses like photochromic or polarized.</p>
-                            <p style="margin: 8px 0 0;">Not sure which combination is right for you? Our opticians can walk through the options during your fitting.</p>
-                        </div>
-                    ` : ''}
+            <div style="display: flex; gap: 8px; margin: 18px 0;">
+                <button class="chip ${state.stockFilter === 'all' ? 'active' : ''}" onclick="filterStock('all')">All</button>
+                <button class="chip ${state.stockFilter === 'frames' ? 'active' : ''}" onclick="filterStock('frames')">Frames</button>
+                <button class="chip ${state.stockFilter === 'lenses' ? 'active' : ''}" onclick="filterStock('lenses')">Lenses</button>
+            </div>
 
-                    ${lensView
-                        ? lensCategories.map(cat => {
-                            const items = filteredStock.filter(i => i.category === cat);
-                            if (items.length === 0) return '';
-                            return `
-                                <h3 style="font-weight: 700; font-size: 13px; margin: 18px 0 10px; color: var(--ink-soft); letter-spacing: 0.02em;">${cat.toUpperCase()}</h3>
-                                ${items.map(renderStockCard).join('')}
-                            `;
-                        }).join('')
-                        : filteredStock.map(renderStockCard).join('')
-                    }
+            ${lensView ? `
+                <div class="info-box" style="margin-bottom: 14px;">
+                    <p style="font-weight: 700; margin-bottom: 6px; color: var(--ink);">🔎 Choosing a Lens</p>
+                    <p style="margin: 0 0 8px;">Every lens can be added to any frame at checkout. Lenses come in three groups:</p>
+                    <p style="margin: 0 0 3px;"><strong>Prescription</strong> — corrects your vision (single vision, progressive, bifocal, high-index).</p>
+                    <p style="margin: 0 0 3px;"><strong>Coatings &amp; Enhancements</strong> — added protection like anti-glare, scratch resistance, and UV/blue-light filtering.</p>
+                    <p style="margin: 0;"><strong>Specialty</strong> — situational lenses like photochromic or polarized.</p>
+                    <p style="margin: 8px 0 0;">Not sure which combination is right for you? Our opticians can walk through the options during your fitting.</p>
                 </div>
-            `;
-        }
+            ` : ''}
+
+            ${cardsHtml}
+        </div>
+    `;
+}
 
         function renderBooking() {
             if (state.bookingStep === 'date') return renderBookingDate();
