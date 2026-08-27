@@ -1332,37 +1332,6 @@ async function refreshHome() {
         </div>
     `;
 }
-    return `
-        <div class="page">
-            <label class="field-label" for="stockClinicSelect">Choose Clinic</label>
-            <select id="stockClinicSelect" class="input-field" onchange="selectStockClinic(this.value)">
-                <option value="">All Clinics</option>
-                ${clinics.map(c => `
-                    <option value="${c.id}" ${state.selectedStockClinic === c.id ? 'selected' : ''}>${c.name}</option>
-                `).join('')}
-            </select>
-
-            <div style="display: flex; gap: 8px; margin: 18px 0;">
-                <button class="chip ${state.stockFilter === 'all' ? 'active' : ''}" onclick="filterStock('all')">All</button>
-                <button class="chip ${state.stockFilter === 'frames' ? 'active' : ''}" onclick="filterStock('frames')">Frames</button>
-                <button class="chip ${state.stockFilter === 'lenses' ? 'active' : ''}" onclick="filterStock('lenses')">Lenses</button>
-            </div>
-
-            ${lensView ? `
-                <div class="info-box" style="margin-bottom: 14px;">
-                    <p style="font-weight: 700; margin-bottom: 6px; color: var(--ink);">🔎 Choosing a Lens</p>
-                    <p style="margin: 0 0 8px;">Every lens can be added to any frame at checkout. Lenses come in three groups:</p>
-                    <p style="margin: 0 0 3px;"><strong>Prescription</strong> — corrects your vision (single vision, progressive, bifocal, high-index).</p>
-                    <p style="margin: 0 0 3px;"><strong>Coatings &amp; Enhancements</strong> — added protection like anti-glare, scratch resistance, and UV/blue-light filtering.</p>
-                    <p style="margin: 0;"><strong>Specialty</strong> — situational lenses like photochromic or polarized.</p>
-                    <p style="margin: 8px 0 0;">Not sure which combination is right for you? Our opticians can walk through the options during your fitting.</p>
-                </div>
-            ` : ''}
-
-            ${cardsHtml}
-        </div>
-    `;
-}
 
         function renderBooking() {
             if (state.bookingStep === 'date') return renderBookingDate();
