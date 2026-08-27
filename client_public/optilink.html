@@ -758,17 +758,14 @@ async function refreshHome() {
     showToast('Home refreshed');
 }
         async function loadStock() {
-            try {
-                const url = state.selectedStockClinic
-                    ? `/api/stock?clinicId=${encodeURIComponent(state.selectedStockClinic)}`
-                    : '/api/stock';
-                const resp = await fetch(url);
-                const data = await resp.json();
-                stock = data.stock || stock;
-            } catch (err) {
-                // keep fallback stock already defined below
-            }
-        }
+    try {
+        const resp = await fetch('/api/stock');   // ← always fetch all, no clinicId
+        const data = await resp.json();
+        stock = data.stock || [];
+    } catch (err) {
+        // keep previous stock if fetch fails
+    }
+}
 
         const frames = [
             { id: 1, name: 'Classic Rectangle', style: 'classic', img: 'data:image/jpeg;base64,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' },
@@ -1278,13 +1275,18 @@ async function refreshHome() {
     `;
 }
         function renderStock() {
+    // 1) Filter by clinic
+    const clinicFiltered = state.selectedStockClinic
+        ? stock.filter(item => item.clinicId === state.selectedStockClinic)
+        : stock;
+
+    // 2) Filter by product type (all / frames / lenses)
     const filteredStock = state.stockFilter === 'all'
-        ? stock
-        : stock.filter(item => item.type === state.stockFilter.slice(0, -1)); // "frames" -> "frame", "lenses" -> "lens"
+        ? clinicFiltered
+        : clinicFiltered.filter(item => item.type === state.stockFilter.slice(0, -1));
 
     const lensView = state.stockFilter === 'lenses';
 
-    // Build list of cards (with empty state)
     const cardsHtml = filteredStock.length === 0
         ? `<p style="color: var(--muted); font-size: 13px; text-align: center; padding: 20px 0;">No items found for the selected filters.</p>`
         : (lensView
@@ -1292,12 +1294,43 @@ async function refreshHome() {
                 const items = filteredStock.filter(i => i.category === cat);
                 if (items.length === 0) return '';
                 return `
-                    <h3 style="font-weight: 700; font-size: 13px; margin: 18px 0 10px; color: var(--ink-soft); letter-spacing: 0.02em;">${cat.toUpperCase()}</h3>
+                    <h3 style="font-weight: 700; font-size: 13px; margin: 18px 0 10px; color: var(--ink-soft);">${cat.toUpperCase()}</h3>
                     ${items.map(renderStockCard).join('')}
                 `;
             }).join('')
             : filteredStock.map(renderStockCard).join('')
         );
+
+    return `
+        <div class="page">
+            <label class="field-label" for="stockClinicSelect">Choose Clinic</label>
+            <select id="stockClinicSelect" class="input-field" onchange="selectStockClinic(this.value)">
+                <option value="">All Clinics</option>
+                ${clinics.map(c => `
+                    <option value="${c.id}" ${state.selectedStockClinic === c.id ? 'selected' : ''}>${c.name}</option>
+                `).join('')}
+            </select>
+
+            <div style="display: flex; gap: 8px; margin: 18px 0;">
+                <button class="chip ${state.stockFilter === 'all' ? 'active' : ''}" onclick="filterStock('all')">All</button>
+                <button class="chip ${state.stockFilter === 'frames' ? 'active' : ''}" onclick="filterStock('frames')">Frames</button>
+                <button class="chip ${state.stockFilter === 'lenses' ? 'active' : ''}" onclick="filterStock('lenses')">Lenses</button>
+            </div>
+
+            ${lensView ? `
+                <div class="info-box" style="margin-bottom: 14px;">
+                    <p style="font-weight: 700; margin-bottom: 6px; color: var(--ink);">🔎 Choosing a Lens</p>
+                    <p style="margin: 0 0 8px;">Every lens can be added to any frame at checkout. Lenses come in three groups:</p>
+                    <p style="margin: 0 0 3px;"><strong>Prescription</strong> — corrects your vision.</p>
+                    <p style="margin: 0 0 3px;"><strong>Coatings &amp; Enhancements</strong> — anti-glare, scratch resistance, etc.</p>
+                    <p style="margin: 0;"><strong>Specialty</strong> — photochromic or polarized.</p>
+                </div>
+            ` : ''}
+
+            ${cardsHtml}
+        </div>
+    `;
+}
 
     return `
         <div class="page">
@@ -1714,10 +1747,9 @@ function drawGlassesOnCanvas(ctx, canvas, landmarks) {
         }
 
         function selectStockClinic(clinicId) {
-            state.selectedStockClinic = clinicId;
-            await loadStock();
-            renderPage();
-        }
+    state.selectedStockClinic = clinicId;
+    renderPage();   
+}
 
         function saveDetailsToState() {
             const fullName = document.getElementById('fullName');
