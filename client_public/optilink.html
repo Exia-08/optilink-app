@@ -1715,7 +1715,7 @@ function drawGlassesOnCanvas(ctx, canvas, landmarks) {
 
         function selectStockClinic(clinicId) {
             state.selectedStockClinic = clinicId;
-            loadStock();
+            await loadStock();
             renderPage();
         }
 
