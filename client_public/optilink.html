@@ -760,7 +760,7 @@ async function refreshHome() {
 }
         async function loadStock() {
     try {
-        const resp = await fetch('/api/stock');   // ← always fetch all, no clinicId
+        const resp = await fetch('/api/stock');
         const data = await resp.json();
         stock = data.stock || [];
     } catch (err) {
@@ -1332,7 +1332,6 @@ async function refreshHome() {
         </div>
     `;
 }
-
     return `
         <div class="page">
             <label class="field-label" for="stockClinicSelect">Choose Clinic</label>
@@ -1749,8 +1748,9 @@ function drawGlassesOnCanvas(ctx, canvas, landmarks) {
 
         function selectStockClinic(clinicId) {
     state.selectedStockClinic = clinicId;
-    renderPage();   
+    renderPage();
 }
+
 
         function saveDetailsToState() {
             const fullName = document.getElementById('fullName');
