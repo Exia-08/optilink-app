@@ -19,8 +19,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Serve static files
+// Serve static files from the selected public folder
 app.use(express.static(path.join(__dirname, PUBLIC_DIR)));
+
+// Serve images from the root images folder (for shared assets)
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // Connect to primary database
 mongoose.connect(process.env.MONGODB_URI, {
@@ -90,7 +93,7 @@ async function seedStock() {
 }
 seedStock();
 
-// Catch-all: serve the appropriate entry HTML file (AFTER API routes)
+// Catch-all: serve the appropriate entry HTML file
 app.get('*', (req, res) => {
     const entryFile = APP_TYPE === 'admin' ? 'admin-login.html' : 'index.html';
     res.sendFile(path.join(__dirname, PUBLIC_DIR, entryFile));
