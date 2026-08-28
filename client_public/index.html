@@ -209,10 +209,6 @@
         .password-requirements li.valid {
             color: var(--success);
         }
-        .password-requirements li.valid::before {
-            content: '✓ ';
-            color: var(--success);
-        }
 
         .btn {
             border: none;
@@ -326,7 +322,7 @@
     <div id="app">
         <div class="login-wrap">
             <div class="brand">
-                 <img src="/images/OptilinkLogo.png" alt="OptiLink logo">
+                 <img src="/images/OptilinkLogo.png" alt="OptiLink logo" class="brand-logo">
                  <div class="brand-title">Opti<span class="accent">Link</span></div>
                 <p class="brand-sub">Access your vision care portal</p>
             </div>
@@ -520,7 +516,6 @@
                 return false;
             }
 
-            // Validate password requirements
             const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
             if (!passwordRegex.test(password)) {
                 showToast('Password does not meet the requirements');
