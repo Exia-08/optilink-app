@@ -1,11 +1,14 @@
 const nodemailer = require('nodemailer');
 
-// Configure transporter
+// Create transporter using generic SMTP settings from environment variables.
+// This makes it flexible for any email provider.
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT) || 587,
+    secure: Number(process.env.SMTP_PORT) === 465, // true for 465, false for other ports
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
     },
 });
 
@@ -16,7 +19,7 @@ const transporter = nodemailer.createTransport({
  */
 async function sendVerificationEmail(to, code) {
     const mailOptions = {
-        from: `OptiLink <${process.env.EMAIL_USER}>`,
+        from: `OptiLink <${process.env.SMTP_USER}>`,
         to,
         subject: 'Verify your OptiLink account',
         html: `
