@@ -7,6 +7,9 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true },
     phone: String,
     role: { type: String, enum: ['client', 'admin'], default: 'client' },
+    isVerified: { type: Boolean, default: false },
+    verificationCode: String,
+    verificationCodeExpires: Date,
     settings: {
         pushNotifications: { type: Boolean, default: true },
         emailReminders: { type: Boolean, default: true },
