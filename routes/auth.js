@@ -1,7 +1,9 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const User = require('../models/User');
+const { sendVerificationEmail } = require('../utils/emailService');
 
 const router = express.Router();
 
@@ -22,6 +24,11 @@ async function getUserFromToken(req) {
     }
 }
 
+// Generate a 6-digit verification code
+function generateVerificationCode() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
 // ---------- CLIENT SIGNUP ----------
 router.post('/signup', async (req, res) => {
     try {
@@ -34,27 +41,79 @@ router.post('/signup', async (req, res) => {
         const existing = await User.findOne({ email });
         if (existing) return res.status(400).json({ error: 'Email already registered' });
 
+        // Password strength check (same as frontend)
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+        if (!passwordRegex.test(password)) {
+            return res.status(400).json({ error: 'Password does not meet requirements' });
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
+        const verificationCode = generateVerificationCode();
+        const verificationCodeExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+
         const user = await User.create({
             fullName,
             email,
             phone,
             password: hashedPassword,
-            role: 'client'
+            role: 'client',
+            isVerified: false,
+            verificationCode,
+            verificationCodeExpires,
         });
 
+        // Send verification email
+        await sendVerificationEmail(user.email, verificationCode);
+
+        res.status(201).json({
+            message: 'Account created. A verification code has been sent to your email.',
+            email: user.email, // return email so frontend can prefill
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// ---------- VERIFY EMAIL (with code) ----------
+router.post('/verify-email', async (req, res) => {
+    try {
+        const { email, code } = req.body;
+
+        if (!email || !code) {
+            return res.status(400).json({ error: 'Email and verification code are required' });
+        }
+
+        const user = await User.findOne({
+            email,
+            verificationCode: code,
+            verificationCodeExpires: { $gt: Date.now() },
+        });
+
+        if (!user) {
+            return res.status(400).json({ error: 'Invalid or expired verification code' });
+        }
+
+        // Mark as verified and clear code
+        user.isVerified = true;
+        user.verificationCode = undefined;
+        user.verificationCodeExpires = undefined;
+        await user.save();
+
+        // Generate token and set cookie (auto-login after verification)
         const token = generateToken(user);
         res.cookie('token', token, { httpOnly: true, sameSite: 'lax' });
 
-        res.status(201).json({
+        res.json({
             user: {
                 id: user._id,
                 fullName: user.fullName,
                 email: user.email,
                 phone: user.phone,
                 role: user.role,
-                settings: user.settings
-            }
+                settings: user.settings,
+                insurance: user.insurance,
+            },
         });
     } catch (err) {
         console.error(err);
@@ -83,6 +142,11 @@ router.post('/login', async (req, res) => {
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
+
+        // Block login if email not verified
+        if (!user.isVerified) {
+            return res.status(403).json({ error: 'Please verify your email before logging in.' });
+        }
 
         if (role && user.role !== role) {
             return res.status(403).json({ error: 'Unauthorized role' });
@@ -124,7 +188,7 @@ router.post('/register', async (req, res) => {
         if (existing) return res.status(400).json({ error: 'Username or email already exists' });
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const fullName = username; // or you can keep a separate fullName if desired
+        const fullName = username; // or keep separate fullName if desired
 
         const user = await User.create({
             fullName,
@@ -133,7 +197,8 @@ router.post('/register', async (req, res) => {
             password: hashedPassword,
             role: 'admin',
             adminRole: role,
-            clinicId
+            clinicId,
+            isVerified: true // admins are verified by default or could also require verification
         });
 
         res.status(201).json({ message: 'Admin account created', username: user.username });
@@ -159,7 +224,8 @@ router.get('/me', async (req, res) => {
             settings: user.settings,
             insurance: user.insurance,
             clinicId: user.clinicId,
-            adminRole: user.adminRole
+            adminRole: user.adminRole,
+            isVerified: user.isVerified,
         }
     });
 });
