@@ -240,6 +240,12 @@
             transform: none;
         }
 
+        .btn-ghost {
+            background: transparent;
+            color: var(--blue);
+            padding: 8px 10px;
+        }
+
         .spinner {
             width: 15px;
             height: 15px;
@@ -327,6 +333,7 @@
                 <p class="brand-sub">Access your vision care portal</p>
             </div>
 
+            <!-- Login Card -->
             <div class="card">
                 <form id="loginForm" onsubmit="return handleLogin(event)" novalidate>
                     <div class="field-group" id="identifierGroup">
@@ -366,38 +373,65 @@
                 </p>
             </div>
 
+            <!-- Signup Card -->
             <div class="card" id="signupCard" style="display:none; margin-top: 16px;">
-                <form id="signupForm" onsubmit="return handleSignup(event)" novalidate>
+                <!-- Signup fields -->
+                <div id="signupFields">
+                    <form id="signupForm" onsubmit="return handleSignup(event)" novalidate>
+                        <div class="field-group">
+                            <label class="field-label" for="signupName">Full Name</label>
+                            <input type="text" id="signupName" class="input-field" placeholder="Jane Doe" autocomplete="name">
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label" for="signupEmail">Email</label>
+                            <input type="email" id="signupEmail" class="input-field" placeholder="client@example.com" autocomplete="username">
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label" for="signupPhone">Phone</label>
+                            <input type="tel" id="signupPhone" class="input-field" placeholder="(555) 000-0000" autocomplete="tel">
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label" for="signupPassword">Password</label>
+                            <input type="password" id="signupPassword" class="input-field" placeholder="Create a password" autocomplete="new-password" oninput="updatePasswordRequirements(this.value)">
+                            <ul class="password-requirements" id="passwordRequirements">
+                                <li id="reqLength">Minimum of 8 characters</li>
+                                <li id="reqUppercase">Must include at least one uppercase letter (A–Z)</li>
+                                <li id="reqLowercase">Must include at least one lowercase letter (a–z)</li>
+                                <li id="reqNumber">Must include at least one number (0–9)</li>
+                                <li id="reqSpecial">Must include at least one special character (e.g., ! @ # $ % ^ & *)</li>
+                                <li>Avoid using obvious words like your name, birthday, or “password”</li>
+                                <li>Encourage users to create a unique password not used on other sites</li>
+                            </ul>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="signupBtn">
+                            <span class="spinner" id="signupSpinner"></span>
+                            <span id="signupBtnText">Create Account</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Verification fields (hidden initially) -->
+                <div id="verificationFields" style="display:none;">
+                    <p style="color: var(--ink-soft); margin-bottom: 8px;">
+                        We sent a verification code to <strong id="verifyEmailDisplay"></strong>.
+                        Enter the code below to verify your account.
+                    </p>
                     <div class="field-group">
-                        <label class="field-label" for="signupName">Full Name</label>
-                        <input type="text" id="signupName" class="input-field" placeholder="Jane Doe" autocomplete="name">
+                        <label class="field-label" for="verificationCode">Verification Code</label>
+                        <input type="text" id="verificationCode" class="input-field" placeholder="6-digit code" inputmode="numeric" maxlength="6">
                     </div>
-                    <div class="field-group">
-                        <label class="field-label" for="signupEmail">Email</label>
-                        <input type="email" id="signupEmail" class="input-field" placeholder="client@example.com" autocomplete="username">
-                    </div>
-                    <div class="field-group">
-                        <label class="field-label" for="signupPhone">Phone (optional)</label>
-                        <input type="tel" id="signupPhone" class="input-field" placeholder="(555) 000-0000" autocomplete="tel">
-                    </div>
-                    <div class="field-group">
-                        <label class="field-label" for="signupPassword">Password</label>
-                        <input type="password" id="signupPassword" class="input-field" placeholder="Create a password" autocomplete="new-password" oninput="updatePasswordRequirements(this.value)">
-                        <ul class="password-requirements" id="passwordRequirements">
-                            <li id="reqLength">Minimum of 8 characters</li>
-                            <li id="reqUppercase">Must include at least one uppercase letter (A–Z)</li>
-                            <li id="reqLowercase">Must include at least one lowercase letter (a–z)</li>
-                            <li id="reqNumber">Must include at least one number (0–9)</li>
-                            <li id="reqSpecial">Must include at least one special character (e.g., ! @ # $ % ^ & *)</li>
-                            <li>Avoid using obvious words like your name, birthday, or “password”</li>
-                            <li>Encourage users to create a unique password not used on other sites</li>
-                        </ul>
-                    </div>
-                    <button type="submit" class="btn btn-primary" id="signupBtn">
-                        <span class="spinner" id="signupSpinner"></span>
-                        <span id="signupBtnText">Create Account</span>
+                    <button class="btn btn-primary" id="verifyBtn" onclick="verifyEmailCode()">
+                        <span class="spinner" id="verifySpinner"></span>
+                        <span id="verifyBtnText">Verify Email</span>
                     </button>
-                </form>
+                    <button class="btn btn-ghost" style="margin-top: 8px;" onclick="resendVerificationCode()">
+                        Resend Code
+                    </button>
+                    <p class="signup-row" style="margin-top: 12px;">
+                        <button type="button" class="link-btn" onclick="backToSignup()">Change details</button>
+                    </p>
+                </div>
+
                 <p class="signup-row">
                     <button type="button" class="link-btn" onclick="toggleSignup(false)">Back to log in</button>
                 </p>
@@ -437,6 +471,11 @@
             reqLowercase.classList.toggle('valid', /[a-z]/.test(password));
             reqNumber.classList.toggle('valid', /[0-9]/.test(password));
             reqSpecial.classList.toggle('valid', /[!@#$%^&*(),.?":{}|<>]/.test(password));
+        }
+
+        function toggleSignup(show) {
+            document.getElementById('signupCard').style.display = show ? 'block' : 'none';
+            document.querySelector('.card').style.display = show ? 'none' : 'block';
         }
 
         async function handleLogin(evt) {
@@ -486,20 +525,6 @@
             return false;
         }
 
-        let toastTimer = null;
-        function showToast(msg) {
-            const el = document.getElementById('toast');
-            el.textContent = msg;
-            el.classList.add('show');
-            clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
-        }
-
-        function toggleSignup(show) {
-            document.getElementById('signupCard').style.display = show ? 'block' : 'none';
-            document.querySelector('.card').style.display = show ? 'none' : 'block';
-        }
-
         async function handleSignup(evt) {
             evt.preventDefault();
             const btn = document.getElementById('signupBtn');
@@ -542,10 +567,12 @@
                     return false;
                 }
 
-                showToast('Account created! Signing in…');
-                setTimeout(() => {
-                    window.location.href = 'optilink.html';
-                }, 500);
+                // Show verification section
+                document.getElementById('signupFields').style.display = 'none';
+                document.getElementById('verificationFields').style.display = 'block';
+                document.getElementById('verifyEmailDisplay').textContent = email;
+
+                showToast('Check your email for the verification code');
             } catch (err) {
                 showToast('Network error — is the server running?');
                 btn.disabled = false;
@@ -554,6 +581,93 @@
             }
 
             return false;
+        }
+
+        async function verifyEmailCode() {
+            const email = document.getElementById('signupEmail').value.trim();
+            const code = document.getElementById('verificationCode').value.trim();
+
+            if (!email || !code) {
+                showToast('Please enter the verification code');
+                return;
+            }
+
+            const btn = document.getElementById('verifyBtn');
+            const spinner = document.getElementById('verifySpinner');
+            const text = document.getElementById('verifyBtnText');
+
+            btn.disabled = true;
+            spinner.classList.add('show');
+            text.textContent = 'Verifying…';
+
+            try {
+                const resp = await fetch('/api/auth/verify-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, code })
+                });
+                const data = await resp.json();
+
+                if (!resp.ok) {
+                    showToast(data.error || 'Verification failed');
+                    btn.disabled = false;
+                    spinner.classList.remove('show');
+                    text.textContent = 'Verify Email';
+                    return;
+                }
+
+                showToast('Email verified! Signing in…');
+                setTimeout(() => {
+                    window.location.href = 'optilink.html';
+                }, 500);
+            } catch (err) {
+                showToast('Network error — is the server running?');
+                btn.disabled = false;
+                spinner.classList.remove('show');
+                text.textContent = 'Verify Email';
+            }
+        }
+
+        async function resendVerificationCode() {
+            const email = document.getElementById('signupEmail').value.trim();
+            if (!email) {
+                showToast('Email not found. Please go back and try again.');
+                return;
+            }
+
+            showToast('Resending verification code…');
+
+            try {
+                const resp = await fetch('/api/auth/resend-verification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await resp.json();
+
+                if (!resp.ok) {
+                    showToast(data.error || 'Failed to resend code');
+                    return;
+                }
+
+                showToast('New code sent to your email');
+            } catch (err) {
+                showToast('Network error — is the server running?');
+            }
+        }
+
+        function backToSignup() {
+            document.getElementById('verificationFields').style.display = 'none';
+            document.getElementById('signupFields').style.display = 'block';
+        }
+
+        let toastTimer = null;
+        function showToast(msg) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
         }
     </script>
 </body>
