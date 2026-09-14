@@ -1,15 +1,12 @@
 const { Resend } = require('resend');
 
-// TEMPORARY: hardcoded key to confirm the code works
-const KEY = process.env.RESEND_API_KEY || 're_MWSgeop5_erm6U5RA1jSJrUL9AfWghXgP';
-
-console.log('🔑 Key loaded:', KEY.startsWith('re_') ? 'YES' : 'NO');
+console.log('🔑 RESEND_API_KEY check at startup:', process.env.RESEND_API_KEY ? 'FOUND' : 'NOT FOUND');
 
 let resend = null;
-if (KEY && KEY.startsWith('re_')) {
-    resend = new Resend(KEY);
+if (process.env.RESEND_API_KEY) {
+    resend = new Resend(process.env.RESEND_API_KEY);
 } else {
-    console.warn('⚠️ No valid key found');
+    console.warn('⚠️ RESEND_API_KEY missing — email sending disabled.');
 }
 
 async function sendVerificationEmail(to, token) {
