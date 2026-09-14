@@ -1,5 +1,10 @@
 const { Resend } = require('resend');
 
+// 🔍 Diagnostic log — will show in Render startup logs
+console.log('🔑 RESEND_API_KEY status:', process.env.RESEND_API_KEY
+    ? `SET (starts with ${process.env.RESEND_API_KEY.slice(0, 5)}...)`
+    : 'MISSING');
+
 // Initialize Resend only if the API key exists
 let resend = null;
 if (process.env.RESEND_API_KEY) {
@@ -8,6 +13,11 @@ if (process.env.RESEND_API_KEY) {
     console.warn('⚠️ RESEND_API_KEY missing — email sending disabled.');
 }
 
+/**
+ * Send a verification email with a "Click to verify" button.
+ * @param {string} to - Recipient email address.
+ * @param {string} token - Verification token.
+ */
 async function sendVerificationEmail(to, token) {
     if (!resend) {
         console.warn(`⚠️ Skipping verification email to ${to} (no API key configured)`);
