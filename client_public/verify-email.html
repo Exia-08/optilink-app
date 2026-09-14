@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email - OptiLink</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+            background: #FAFAFD;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: #fff;
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(60, 40, 130, 0.10);
+            text-align: center;
+            max-width: 420px;
+            width: 100%;
+        }
+        .icon {
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            background: #1B1730;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #2b5876;
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+        p {
+            color: #4B4768;
+            font-size: 14.5px;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+        a.btn {
+            display: inline-block;
+            background: #22C3E6;
+            color: #fff;
+            text-decoration: none;
+            padding: 12px 30px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon" id="statusIcon">&#9993;</div>
+        <h1 id="statusTitle">Verifying your email…</h1>
+        <p id="statusMessage">Please wait while we verify your account.</p>
+        <a class="btn" id="backBtn" href="index.html" style="display:none;">Back to Login</a>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const verified = params.get('verified');
+        const token = params.get('token');
+
+        const icon = document.getElementById('statusIcon');
+        const title = document.getElementById('statusTitle');
+        const message = document.getElementById('statusMessage');
+        const backBtn = document.getElementById('backBtn');
+
+        if (verified === '1') {
+            icon.innerHTML = '&#10003;';
+            title.textContent = 'Email Verified!';
+            message.textContent = 'Your email has been verified. You can now go back and complete your signup.';
+            backBtn.style.display = 'inline-block';
+        } else if (token) {
+            // Auto-submit the token to the backend
+            fetch(`/api/auth/verify-email?token=${encodeURIComponent(token)}`)
+                .then(() => {
+                    icon.innerHTML = '&#10003;';
+                    title.textContent = 'Email Verified!';
+                    message.textContent = 'Your email is verified. Return to the signup page to complete your account.';
+                    backBtn.style.display = 'inline-block';
+                })
+                .catch(() => {
+                    icon.innerHTML = '&#10007;';
+                    title.textContent = 'Verification Failed';
+                    message.textContent = 'The link may be invalid or expired. Please try signing up again.';
+                    backBtn.style.display = 'inline-block';
+                });
+        } else {
+            icon.innerHTML = '&#10007;';
+            title.textContent = 'Invalid Link';
+            message.textContent = 'No verification token found.';
+            backBtn.style.display = 'inline-block';
+        }
+    </script>
+</body>
+</html>
