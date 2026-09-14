@@ -1,22 +1,42 @@
 const nodemailer = require('nodemailer');
 
-const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: Number(process.env.SMTP_PORT) === 465,
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-    },
-});
+// Create transporter only if credentials exist, otherwise skip sending.
+let transporter = null;
+
+try {
+    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+        transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: 465,                 // 465 = SSL (works on Render)
+            secure: true,              // true for port 465
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS,
+            },
+            tls: {
+                rejectUnauthorized: false
+            }
+        });
+    } else {
+        console.warn('⚠️ SMTP credentials missing — email sending disabled.');
+    }
+} catch (err) {
+    console.error('❌ Failed to create mail transporter:', err.message);
+    transporter = null;
+}
 
 /**
  * Send a verification email with a "Click to verify" button.
- * @param {string} to - Recipient email.
+ * @param {string} to - Recipient email address.
  * @param {string} token - Verification token.
  */
 async function sendVerificationEmail(to, token) {
-    const verifyUrl = `${process.env.APP_URL}/verify-email.html?token=${token}`;
+    if (!transporter) {
+        console.warn(`⚠️ Skipping verification email to ${to} (no SMTP configured)`);
+        return;
+    }
+
+    const verifyUrl = `${process.env.APP_URL || 'http://localhost:3000'}/verify-email.html?token=${token}`;
 
     const mailOptions = {
         from: `OptiLink <${process.env.SMTP_USER}>`,
@@ -50,7 +70,13 @@ async function sendVerificationEmail(to, token) {
         `,
     };
 
-    await transporter.sendMail(mailOptions);
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log(`✅ Verification email sent to ${to}`);
+    } catch (err) {
+        console.error(`❌ Failed to send verification email to ${to}:`, err.message);
+        throw err;
+    }
 }
 
 module.exports = { sendVerificationEmail };
