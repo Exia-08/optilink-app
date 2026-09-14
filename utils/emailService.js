@@ -1,7 +1,7 @@
 const { Resend } = require('resend');
 
 // TEMPORARY: hardcoded key to confirm the code works
-const KEY = process.env.RESEND_API_KEY || 'PASTE_YOUR_REAL_KEY_HERE';
+const KEY = process.env.RESEND_API_KEY || 're_MWSgeop5_erm6U5RA1jSJrUL9AfWghXgP';
 
 console.log('🔑 Key loaded:', KEY.startsWith('re_') ? 'YES' : 'NO');
 
