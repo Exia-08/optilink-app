@@ -9,6 +9,18 @@ const { initClientDB } = require('./clientDB');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ============================================
+// DIAGNOSTIC CHECK — shows up in Render logs
+// ============================================
+console.log('========== ENV CHECK ==========');
+console.log('RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY);
+console.log('RESEND_API_KEY length:', process.env.RESEND_API_KEY ? process.env.RESEND_API_KEY.length : 0);
+console.log('RESEND_API_KEY starts with re_:', process.env.RESEND_API_KEY ? process.env.RESEND_API_KEY.startsWith('re_') : false);
+console.log('APP_URL:', process.env.APP_URL || 'NOT SET');
+console.log('MONGODB_URI exists:', !!process.env.MONGODB_URI);
+console.log('CLIENT_MONGODB_URI exists:', !!process.env.CLIENT_MONGODB_URI);
+console.log('===============================');
+
 // Determine which public folder to serve
 const APP_TYPE = process.env.APP_TYPE || 'client';
 const PUBLIC_DIR = APP_TYPE === 'admin' ? 'admin_public' : 'client_public';
@@ -22,7 +34,7 @@ app.use(cookieParser());
 // Serve static files from the selected public folder
 app.use(express.static(path.join(__dirname, PUBLIC_DIR)));
 
-// Serve images from the root images folder (for shared assets)
+// Serve images from the root images folder
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // Connect to primary database
@@ -36,12 +48,12 @@ mongoose.connect(process.env.MONGODB_URI, {
     process.exit(1);
 });
 
-// Always connect to the client database (fallback to primary URI)
+// Connect to client database (fallback to primary)
 const clientUri = process.env.CLIENT_MONGODB_URI || process.env.MONGODB_URI;
 if (clientUri) {
     initClientDB(clientUri);
 } else {
-    console.warn('⚠️ No MongoDB URI available for client DB. Client booking will not work.');
+    console.warn('⚠️ No MongoDB URI available for client DB.');
 }
 
 // Routes
